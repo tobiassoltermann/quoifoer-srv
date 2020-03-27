@@ -98,9 +98,11 @@ const CoiffeurCardSet = new CardSet()
 );
 
 class CoiffeurGamerules {
-    constructor() {
+    constructor(room) {
+        this.room = room;
+        console.log(room.name);
         this.gameState = {
-            status: Status.CHOOSE_TRUMP,
+            status: Status.PLAYER_SEATING,
             scoreResult: {
                 
             },
@@ -117,6 +119,70 @@ class CoiffeurGamerules {
         };
     }
 
+    // Must implement!
+    onPlayerJoin(player) {
+        console.log("join", player);
+        player.client.on('coiffeur-requestgamestate', () => {
+            player.client.emit("coiffeur-gamestate", this.gameState.status);
+        })
+
+        player.client.on('coiffeur-seat', (seatNo, response) => {
+            if (this.room.getPlayerBySeat(seatNo) == null) {
+                // Can seat as it's free
+                player.assignSeat(seatNo);
+                response({
+                    status: true,
+                });
+            
+            }else {
+                response({
+                    status: false,
+                    message: "Seat was already taken."
+                });
+            }
+            this.sendGameState(player);
+        });
+    }
+
+    // Must implement!
+    onPlayerLeave(player) {
+        console.log("leave", player);
+    }
+
+    sendGameState(player) {
+        player.client.emit('coiffeur-gamestate', this.gameState);
+    }
+
+    sendPlayerSeatsAbsolute() {
+        const seatOrder = [ 's', 'e', 'n', 'w'];
+        playerSeats = {
+            s: null,
+            e: null, 
+            n: null, 
+            w: null,
+        };
+        const allPlayers = this.room.getAllPlayers();
+
+        allPlayers.forEach((player) => {
+            var absoluteSeatIndex = player.getSeat();
+            if (absoluteSeatIndex == null) {
+                return; // Unseated player.
+            }
+            if (playerSeats[seatOrder[absoluteSeatIndex]] != null) {
+                console.log("Double seat! ", player.getName());
+                return;
+            }
+            playerSeats[seatOrder[absoluteSeatIndex]] = player.getName();
+        });
+        
+        emitAllPlayers("coiffeur-absoluteseats", playerSeats);
+    }
+
+    emitAllPlayers(event, ...args) {
+        this.room.getAllPlayers().forEach( (player) => {
+            player.emit(event, ...args);
+        })
+    }
     distributeCards() {
         const shuffledCardSet = this.cardSet.getShuffledCardDeck();
         this.playerCardDecks = {

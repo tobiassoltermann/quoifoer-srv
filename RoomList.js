@@ -29,18 +29,15 @@ class RoomList {
         return this.rooms[roomName];
     }
 
-    joinRoom(roomName, client, playerName) {
-        console.log("RoomList.joinRoom:", roomName, playerName);
+    joinRoom(roomName, client, playerName, password) {
         const thisRoom = this.rooms[roomName];
-        return thisRoom.join(client, playerName);
+        return thisRoom.join(client, playerName, password);
     }
 
     leaveRoom(roomName, playerName) {
-        console.log("leaveRoom");
         const thisRoom = this.rooms[roomName];
         var status = thisRoom.leave(playerName);
         if (status.remainingPlayerNo <= 0) {
-            console.log("removeRoom");
             this.removeRoom(roomName);
         }
         delete status.remainingPlayerNo;

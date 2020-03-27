@@ -39,13 +39,11 @@ class GameServer {
     }
 
     handleNewConnection(client) {
-        console.log("on connection");
         this.sendRoomListAll();
         this.sendOfferedGameRules(client);
 
         var playerName;
         client.on("providename", (name) => {
-            console.log("providename", name);
             playerName = name;
             
         });
@@ -56,14 +54,16 @@ class GameServer {
                 this.sendRoomListAll();
             };
         });
-        client.on("joinRoom", (roomName, response) => {
-            var couldJoin = this.roomList.joinRoom(roomName, client, playerName);
-            console.log("joinRoom Done");
+        client.on("joinRoom", (roomJoinDetails, response) => {
+            var roomName = roomJoinDetails.name;
+            var password = roomJoinDetails.password;
+
+
+            var couldJoin = this.roomList.joinRoom(roomName, client, playerName, password);
             var result = {
                 status: couldJoin.status,
                 message: couldJoin.message,
             };
-            console.log(result);
             var room = this.roomList.getRoom(roomName);
 
             response(result, {
@@ -74,13 +74,11 @@ class GameServer {
             }
         });
         client.on("leaveRoom", (roomName, response) => {
-            console.warn("leaveRoom");
             var couldLeave = this.roomList.leaveRoom(roomName, playerName);
             response({
                 status: couldLeave.status,
                 message: couldLeave.message,
             });
-            console.log()
             if (couldLeave.status) {
                 this.sendRoomListAll();
             }

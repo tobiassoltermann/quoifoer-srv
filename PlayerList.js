@@ -6,7 +6,6 @@ class PlayerList {
     }
 
     addPlayer(playerName, client) {
-        console.log("PlayerList.addPlayer:", playerName);
         var existingPlayerIndex = this.findIndexByName(playerName);
         if (existingPlayerIndex == -1) {
             // Player does not exist, add.
@@ -37,6 +36,15 @@ class PlayerList {
                 }
             }
         }
+    }
+    getPlayerByName(playerName) {
+        var existingPlayerIndex = this.findIndexByName(playerName);
+        return this.players[existingPlayerIndex];
+    }
+
+    getPlayerBySeat(seatNo) {
+        return this.players.findIndex( (player) => { return player.seat == seatNo } );
+
     }
 
     removePlayerByClient(playerName, client) {
@@ -77,6 +85,10 @@ class PlayerList {
 
     getTotalNumberUnseated() {
         return this.players.filter( (player) => {return player.seat == true } ).length;
+    }
+
+    getAllPlayers() {
+        return this.players;
     }
 }
 
