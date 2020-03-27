@@ -11,14 +11,10 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const startTimestamp = Date.now();
 
-const OFFERED_GAMEMODES = {
-    coiffeur: {
-        label: 'Coiffeur'
-    },
-    schieber: {
-        label: 'Schieber'
-    }
-};
+const RoomList = require('./RoomList');
+const Room = require('./Room');
+
+const AvailableGamemodes = require('./AvailableGamemodes');
 
 /**
  * nodemon index.js
@@ -30,68 +26,12 @@ rooms = [];
 gamestate = {
 
 };
-class RoomList {
-    constructor() {
-        this.MAX_PLAYERS_PER_ROOM = 4;
-        this.rooms = {};
-    }
 
-    addRoom(roomDetails) {
-        if (!this.rooms.hasOwnProperty(roomDetails.name)) {
-            // Room doesn't exist
-            this.rooms[roomDetails.name] = {
-                name: roomDetails.name,
-                protection: roomDetails.protection,
-                playerCount: 0,
-                playerMax: this.MAX_PLAYERS_PER_ROOM,
-            };
-            return true;
-        } else {
-            // Room already exists
-            return false;
-        }
-        
-    }
-
-    joinRoom(roomName) {
-        const thisRoom = this.rooms[roomName];
-        if (thisRoom.playerCount < thisRoom.playerMax) {
-            this.rooms[roomName].playerCount++;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    leaveRoom(roomName) {
-        const thisRoom = this.rooms[roomName];
-        if (thisRoom.playerCount > 0) {
-            this.rooms[roomName].playerCount--;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    getList() {
-        var roomListOrig = this.rooms;
-        var roomListSendable = Object.values(roomListOrig).map( (currentRoom) => {
-            return {
-                name: currentRoom.name,
-                protection: currentRoom.protection,
-                playerCount: currentRoom.playerCount,
-                playerMax: currentRoom.playerMax,
-            }
-        });
-        return roomListSendable;
-    }
-
-}
 
 class GameServer {
     constructor() {
         this.debugInfo = {};
-        this.roomList = new RoomList();
+        this.roomList = new RoomList(this);
 
         io.on("startgame", () => {
         });
@@ -99,34 +39,51 @@ class GameServer {
     }
 
     handleNewConnection(client) {
+        console.log("on connection");
         this.sendRoomListAll();
         this.sendOfferedGameRules(client);
 
+        var playerName;
         client.on("providename", (name) => {
-            players[name] = {
-                client: client
-            };
-    
+            console.log("providename", name);
+            playerName = name;
+            
         });
-        client.on("createRoom", (roomDetails) => {
+        client.on("createRoom", (roomDetails, confirmation) => {
             var roomAddResult = this.roomList.addRoom(roomDetails);
-            this.sendRoomListAll();
+            confirmation(roomAddResult);
+            if (roomAddResult.status) {
+                this.sendRoomListAll();
+            };
         });
         client.on("joinRoom", (roomName, response) => {
-            var couldJoin = this.roomList.joinRoom(roomName);
-            client.join(roomName);
-            this.sendRoomListAll();
-            response(couldJoin);
-            setTimeout(()=>{
-                io.to(roomName).emit('hello');
-            }, 2000);
+            var couldJoin = this.roomList.joinRoom(roomName, client, playerName);
+            console.log("joinRoom Done");
+            var result = {
+                status: couldJoin.status,
+                message: couldJoin.message,
+            };
+            console.log(result);
+            var room = this.roomList.getRoom(roomName);
+
+            response(result, {
+                gameMode: room.gameMode,
+            });
+            if (couldJoin.status) {
+                this.sendRoomListAll();
+            }
         });
         client.on("leaveRoom", (roomName, response) => {
             console.warn("leaveRoom");
-            var couldLeave = this.roomList.leaveRoom(roomName);
-            client.leave(roomName);
-            this.sendRoomListAll();
-            response(couldLeave);
+            var couldLeave = this.roomList.leaveRoom(roomName, playerName);
+            response({
+                status: couldLeave.status,
+                message: couldLeave.message,
+            });
+            console.log()
+            if (couldLeave.status) {
+                this.sendRoomListAll();
+            }
         });
 
         this.scheduleDebugInfo(client, true);
@@ -145,7 +102,13 @@ class GameServer {
     }
 
     sendOfferedGameRules(client) {
-        client.emit('offered-gamemodes', OFFERED_GAMEMODES);
+        var gameModesSendable = {};
+        Object.keys(AvailableGamemodes).forEach( (keyName) => {
+            gameModesSendable[keyName] = {
+                label: AvailableGamemodes[keyName].label
+            }
+        });
+        client.emit('offered-gamemodes', gameModesSendable);
     }
     sendRoomListAll() {
         io.emit('rooms', this.roomList.getList());
