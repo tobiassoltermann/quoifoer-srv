@@ -43,8 +43,16 @@ class PlayerList {
     }
 
     getPlayerBySeat(seatNo) {
-        return this.players.findIndex( (player) => { return player.seat == seatNo } );
-
+        console.log("Player.getPlayerBySeat: ", seatNo);
+        console.log("this.players:", this.players);
+        var result = this.players.findIndex( (player) => { return player.seat == seatNo } );
+        if (result >= 0) {
+            this.players[result]
+        } else {
+            return null;
+        }
+        console.log("result", result);
+        return result
     }
 
     removePlayerByClient(playerName, client) {

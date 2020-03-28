@@ -48,6 +48,7 @@ class Room {
     }
 
     getPlayerBySeat(seatNo) {
+        console.log("Room.getPlayerBySeat: ", seatNo);
         return this.players.getPlayerBySeat(seatNo);
     }
 

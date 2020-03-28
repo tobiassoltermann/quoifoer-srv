@@ -1,10 +1,3 @@
-
-const Status = {
-    CHOOSE_TRUMP: {
-
-    }
-}
-
 class Round {
 
 }
@@ -23,18 +16,18 @@ class Card {
 
 class CardSet {
     constructor() {
-        this.cards={};
+        this.cards = {};
     }
 
     addCard(card) {
         this.cards[card.name] = card;
     }
     addAllCards(cards) {
-        cards.forEach( (card) => {
+        cards.forEach((card) => {
             this.addCard(card);
         })
     }
-    getCard(cardName) {
+    getCard(cardName) {
         return this.cards[card.name];
     }
     getShuffledCardDeck() {
@@ -48,63 +41,66 @@ class CardSet {
     }
 }
 
-const CoiffeurCardSet = new CardSet()
-.addAllCards(
-    [
-        { race: 'H', level: '6'},
-        { race: 'H', level: '7'},
-        { race: 'H', level: '8'},
-        { race: 'H', level: '9'},
-        { race: 'H', level: 'X'},
-        { race: 'H', level: 'J'},
-        { race: 'H', level: 'Q'},
-        { race: 'H', level: 'K'},
-        { race: 'H', level: 'A'},
+const AbsoluteSeatOrder = ['S', 'E', 'N', 'W'];
 
-        { race: 'S', level: '6'},
-        { race: 'S', level: '7'},
-        { race: 'S', level: '8'},
-        { race: 'S', level: '9'},
-        { race: 'S', level: 'X'},
-        { race: 'S', level: 'J'},
-        { race: 'S', level: 'Q'},
-        { race: 'S', level: 'K'},
-        { race: 'S', level: 'A'},
-        
-        { race: 'K', level: '6'},
-        { race: 'K', level: '7'},
-        { race: 'K', level: '8'},
-        { race: 'K', level: '9'},
-        { race: 'K', level: 'X'},
-        { race: 'K', level: 'J'},
-        { race: 'K', level: 'Q'},
-        { race: 'K', level: 'K'},
-        { race: 'K', level: 'A'},
-        
-        { race: 'C', level: '6'},
-        { race: 'C', level: '7'},
-        { race: 'C', level: '8'},
-        { race: 'C', level: '9'},
-        { race: 'C', level: 'X'},
-        { race: 'C', level: 'J'},
-        { race: 'C', level: 'Q'},
-        { race: 'C', level: 'K'},
-        { race: 'C', level: 'A'},
-    ].map(
-        (element) => {
-            return new Card(element.race, element.level);
-        }
-    )
-);
+
+const CoiffeurCardSet = new CardSet()
+    .addAllCards(
+        [
+            { race: 'H', level: '6' },
+            { race: 'H', level: '7' },
+            { race: 'H', level: '8' },
+            { race: 'H', level: '9' },
+            { race: 'H', level: 'X' },
+            { race: 'H', level: 'J' },
+            { race: 'H', level: 'Q' },
+            { race: 'H', level: 'K' },
+            { race: 'H', level: 'A' },
+
+            { race: 'S', level: '6' },
+            { race: 'S', level: '7' },
+            { race: 'S', level: '8' },
+            { race: 'S', level: '9' },
+            { race: 'S', level: 'X' },
+            { race: 'S', level: 'J' },
+            { race: 'S', level: 'Q' },
+            { race: 'S', level: 'K' },
+            { race: 'S', level: 'A' },
+
+            { race: 'K', level: '6' },
+            { race: 'K', level: '7' },
+            { race: 'K', level: '8' },
+            { race: 'K', level: '9' },
+            { race: 'K', level: 'X' },
+            { race: 'K', level: 'J' },
+            { race: 'K', level: 'Q' },
+            { race: 'K', level: 'K' },
+            { race: 'K', level: 'A' },
+
+            { race: 'C', level: '6' },
+            { race: 'C', level: '7' },
+            { race: 'C', level: '8' },
+            { race: 'C', level: '9' },
+            { race: 'C', level: 'X' },
+            { race: 'C', level: 'J' },
+            { race: 'C', level: 'Q' },
+            { race: 'C', level: 'K' },
+            { race: 'C', level: 'A' },
+        ].map(
+            (element) => {
+                return new Card(element.race, element.level);
+            }
+        )
+    );
 
 class CoiffeurGamerules {
     constructor(room) {
         this.room = room;
         console.log(room.name);
         this.gameState = {
-            status: Status.PLAYER_SEATING,
+            status: "PLAYER_SEATING",
             scoreResult: {
-                
+
             },
             cardSet: CoiffeurCardSet,
             playerCardDecks: {
@@ -112,6 +108,9 @@ class CoiffeurGamerules {
                 player1: {},
                 player2: {},
                 player3: {},
+            },
+            seatsAbsolute: {
+
             },
             tableCardDeck: {
 
@@ -123,25 +122,38 @@ class CoiffeurGamerules {
     onPlayerJoin(player) {
         console.log("join", player);
         player.client.on('coiffeur-requestgamestate', () => {
-            player.client.emit("coiffeur-gamestate", this.gameState.status);
+            console.log(this.gameState);
+            this.compileGlobalSeats();
+            var localGamestate = this.compilePlayerGamestate(player);
+            player.client.emit("coiffeur-gamestate", localGamestate);
         })
 
-        player.client.on('coiffeur-seat', (seatNo, response) => {
+        player.client.on('coiffeur-seat', (seatName, response) => {
+            var seatNo = AbsoluteSeatOrder.findIndex((crtSeatname) => { return seatName == crtSeatname});
+            if (seatNo == -1) {
+                response({
+                    status: false,
+                    message: "Seat " + seatName + " doesn't exist"
+                });
+                return;
+            }
             if (this.room.getPlayerBySeat(seatNo) == null) {
                 // Can seat as it's free
                 player.assignSeat(seatNo);
                 response({
                     status: true,
                 });
-            
-            }else {
+
+            } else {
                 response({
                     status: false,
                     message: "Seat was already taken."
                 });
+                return;
             }
-            this.sendGameState(player);
+            this.sendGameStateAll();
         });
+
     }
 
     // Must implement!
@@ -149,17 +161,50 @@ class CoiffeurGamerules {
         console.log("leave", player);
     }
 
-    sendGameState(player) {
-        player.client.emit('coiffeur-gamestate', this.gameState);
+    compilePlayerGamestate(player) {
+        // TODO: Implement recursive Object.assign of this.gameState.seatsAbsolute and Cards
+
+        var boardSetup =
+            Object.assign({},
+                this.gameState.seatsAbsolute,
+                {
+                    S: {
+                        card: 'NN',
+                    },
+                    E: {
+                        card: 'NN',
+                    },
+                    N: {
+                        card: 'NN',
+                    },
+                    W: { 
+                        card: 'NN',
+                    }
+                },
+            );
+
+        var localGamestate = {
+            gameStatus: this.gameState.status,
+            scoreResults: this.gameState.scoreResult,
+            cardDeck: this.gameState["playerCardDecks" + player.getSeat()],
+            boardSetup,
+        };
+        return localGamestate;
     }
 
-    sendPlayerSeatsAbsolute() {
-        const seatOrder = [ 's', 'e', 'n', 'w'];
-        playerSeats = {
-            s: null,
-            e: null, 
-            n: null, 
-            w: null,
+    sendGameStateAll() {
+        this.room.getAllPlayers().forEach((player) => {
+            var localGamestate = this.compilePlayerGamestate(player);
+            player.client.emit("coiffeur-gamestate", localGamestate);
+        })
+    }
+
+    compileGlobalSeats() {
+        var playerSeats = {
+            S: null,
+            E: null,
+            N: null,
+            W: null,
         };
         const allPlayers = this.room.getAllPlayers();
 
@@ -168,18 +213,24 @@ class CoiffeurGamerules {
             if (absoluteSeatIndex == null) {
                 return; // Unseated player.
             }
-            if (playerSeats[seatOrder[absoluteSeatIndex]] != null) {
+            if (playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]] != null) {
                 console.log("Double seat! ", player.getName());
                 return;
             }
-            playerSeats[seatOrder[absoluteSeatIndex]] = player.getName();
+            playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]] = {
+                playerName: player.getName()
+            };
         });
-        
-        emitAllPlayers("coiffeur-absoluteseats", playerSeats);
+
+        return this.gameState.seatsAbsolute = playerSeats;
+    }
+
+    sendGameState(player) {
+        player.client.emit('coiffeur-gamestate', this.gameState);
     }
 
     emitAllPlayers(event, ...args) {
-        this.room.getAllPlayers().forEach( (player) => {
+        this.room.getAllPlayers().forEach((player) => {
             player.emit(event, ...args);
         })
     }
