@@ -21,7 +21,7 @@ class PlayerList {
             };
         } else {
             var existingPlayer = this.players[existingPlayerIndex];
-            debugger;
+            // Player with same name already in room. Check if just stale socket (reconnect)
             if (existingPlayer.getSeat() != null && existingPlayer.client == null) {
                 // Player exists and socket is stale. Reassign socket.
                 existingPlayer.client = client;
