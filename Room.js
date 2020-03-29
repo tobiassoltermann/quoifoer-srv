@@ -28,8 +28,12 @@ class Room {
         var status;
         if (this.protection == "none" || this.protection == "passwd" && this.password == password) {
             status = this.players.addPlayer(playerName, client);
-            var newPlayer = this.players.getPlayerByName(playerName);
-            this.gameRuleEngine.onPlayerJoin(newPlayer)
+            if (status.status) {
+                var newPlayer = this.players.getPlayerByName(playerName);
+                this.gameRuleEngine.onPlayerJoin(newPlayer)
+            } else {
+                return status;
+            }
         } else {
             status = {
                 status: false,

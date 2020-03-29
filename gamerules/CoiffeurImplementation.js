@@ -1,107 +1,117 @@
+
+const Card = require('./Card');
+const CardSet = require('./CardSet');
+const CoiffeurCardSet = require('./CoiffeurCardSet');
+
 class Round {
 
-}
-class Card {
-    constructor(race, level) {
-        this.race = race;
-        this.level = level;
-        this.name = race + level;
-    }
-
-    getRace() { return this.race };
-    getLevel() { return this.level };
-    toString() { return this.name };
-
-}
-
-class CardSet {
-    constructor() {
-        this.cards = {};
-    }
-
-    addCard(card) {
-        this.cards[card.name] = card;
-    }
-    addAllCards(cards) {
-        cards.forEach((card) => {
-            this.addCard(card);
-        })
-    }
-    getCard(cardName) {
-        return this.cards[card.name];
-    }
-    getShuffledCardDeck() {
-        const shuffledCards = Object.assign({}, this.cards);
-        return {
-            entireSet: shuffledCards,
-        }
-    }
-    allCards() {
-        Object.values(this.cards);
-    }
 }
 
 const AbsoluteSeatOrder = ['S', 'E', 'N', 'W'];
 
+class CoiffeurScores {
+    constructor() {
+        this.scores = {
+            scoreLines: [
+                {
+                    icon: 'trumpC',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpH',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpS',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpK',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpD',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpU',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpA',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpT',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trump3',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+                {
+                    icon: 'trumpJ',
+                    scoreTeam1: null,
+                    scoreTeam2: null,
+                },
+            ],
+            totalTeam1: 0,
+            totalTeam2: 0,
+            team1Name: 'Team 1',
+            team2Name: 'Team 2',
+            mode: "Coiffeur",
+        };
+    }
 
-const CoiffeurCardSet = new CardSet()
-    .addAllCards(
-        [
-            { race: 'H', level: '6' },
-            { race: 'H', level: '7' },
-            { race: 'H', level: '8' },
-            { race: 'H', level: '9' },
-            { race: 'H', level: 'X' },
-            { race: 'H', level: 'J' },
-            { race: 'H', level: 'Q' },
-            { race: 'H', level: 'K' },
-            { race: 'H', level: 'A' },
+    updateScore(index, scoreObject) {
+        this.scores.scoreLines[index] = Object.assign(
+            this.scores.scoreLines[index],
+            scoreObject
+        );
 
-            { race: 'S', level: '6' },
-            { race: 'S', level: '7' },
-            { race: 'S', level: '8' },
-            { race: 'S', level: '9' },
-            { race: 'S', level: 'X' },
-            { race: 'S', level: 'J' },
-            { race: 'S', level: 'Q' },
-            { race: 'S', level: 'K' },
-            { race: 'S', level: 'A' },
+        this.updateTotals();
+    }
 
-            { race: 'K', level: '6' },
-            { race: 'K', level: '7' },
-            { race: 'K', level: '8' },
-            { race: 'K', level: '9' },
-            { race: 'K', level: 'X' },
-            { race: 'K', level: 'J' },
-            { race: 'K', level: 'Q' },
-            { race: 'K', level: 'K' },
-            { race: 'K', level: 'A' },
+    updateTotals() {
+        this.scores.totalTeam1 = 
+            this.scores.scoreLines.reduce( (acc, currentValue) => {
+                console.log(acc, currentValue.scoreTeam1);
+                return acc + currentValue.scoreTeam1;
+            }, 0);
+        this.scores.totalTeam2 = 
+            this.scores.scoreLines.reduce( (acc, currentValue) => {
+                console.log(acc, currentValue.scoreTeam2);
+                return acc + currentValue.scoreTeam2;
+            }, 0);
+    }
 
-            { race: 'C', level: '6' },
-            { race: 'C', level: '7' },
-            { race: 'C', level: '8' },
-            { race: 'C', level: '9' },
-            { race: 'C', level: 'X' },
-            { race: 'C', level: 'J' },
-            { race: 'C', level: 'Q' },
-            { race: 'C', level: 'K' },
-            { race: 'C', level: 'A' },
-        ].map(
-            (element) => {
-                return new Card(element.race, element.level);
-            }
-        )
-    );
+    updateTeamname(oneOrTwo, teamname) {
+        this.scores["team" + oneOrTwo + "Name"] = teamname;
+    }
+
+    render() {
+        this.updateTotals();
+        return Object.assign({}, this.scores);
+    }
+}
 
 class CoiffeurGamerules {
     constructor(room) {
         this.room = room;
+        this.scoresObject = new CoiffeurScores();
         console.log(room.name);
         this.gameState = {
             status: "PLAYER_SEATING",
-            scoreResult: {
-
-            },
+            scores: this.scoresObject.render(),
             cardSet: CoiffeurCardSet,
             playerCardDecks: {
                 player0: {},
@@ -127,7 +137,7 @@ class CoiffeurGamerules {
         })
 
         player.client.on('coiffeur-seat', (seatName, response) => {
-            var seatNo = AbsoluteSeatOrder.findIndex((crtSeatname) => { return seatName == crtSeatname});
+            var seatNo = AbsoluteSeatOrder.findIndex((crtSeatname) => { return seatName == crtSeatname });
             if (seatNo == -1) {
                 response({
                     status: false,
@@ -172,7 +182,6 @@ class CoiffeurGamerules {
             Object.assign({},
                 this.gameState.seatsAbsolute,
             );
-            console.log("CoiffeurImplementation.compilePlayerGamestate: ", boardSetup);
 
         boardSetup.S.card = "NN";
         boardSetup.E.card = "NN";
@@ -180,9 +189,46 @@ class CoiffeurGamerules {
         boardSetup.W.card = "NN";
         boardSetup.self = AbsoluteSeatOrder[player.getSeat()];
 
+        var yourTeam = (() => {
+            switch (player.getSeat()) {
+                case 0:
+                case 2:
+                    return 1;
+                case 1:
+                case 3:
+                    return 2;
+                default:
+                    return -1;
+            }
+        })()
+
+        var scores = this.scoresObject.render();
+        // TODO: Change PLAYER_SEATING to new "select trumpf" status.
+
+        if (this.gameState.status == "PLAYER_SEATING" && yourTeam > 0) {
+            scores.scoreLines = scores.scoreLines.map( (scoreLine) => {
+                const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
+                return Object.assign(
+                    scoreLine,
+                    { selectable: (myScoreOnLine == null)}
+                )
+            })
+        };
+
+        const teamNames = (player1, player2) => {
+            const shortenPlayername = (name) => {
+                if (name == null) return "?";
+                return name.substring(0, 2);
+            }
+            return shortenPlayername(player1) + "+" + shortenPlayername(player2);
+        }
+        scores.team1Name = teamNames(boardSetup.N.playerName, boardSetup.S.playerName);
+        scores.team2Name = teamNames(boardSetup.W.playerName, boardSetup.E.playerName);
+
         var localGamestate = {
             gameStatus: this.gameState.status,
-            scoreResults: this.gameState.scoreResult,
+            yourTeam: yourTeam,
+            scores: scores,
             cardDeck: this.gameState["playerCardDecks" + player.getSeat()],
             boardSetup,
         };
@@ -195,6 +241,7 @@ class CoiffeurGamerules {
             var localGamestate = this.compilePlayerGamestate(player);
             console.log("sendGameStateAll", "localGamestate", localGamestate);
             player.client.emit("coiffeur-gamestate", localGamestate);
+            player.client.emit('debugInfo', localGamestate);
         })
     }
 
@@ -213,9 +260,9 @@ class CoiffeurGamerules {
                 playerName: null,
             },
         };
-        const allPlayers = this.room.getAllPlayers();
 
         // Fetch all players' names and store locally
+        const allPlayers = this.room.getAllPlayers();
         allPlayers.forEach((player) => {
             var absoluteSeatIndex = player.getSeat();
             if (absoluteSeatIndex == null) {
@@ -227,7 +274,7 @@ class CoiffeurGamerules {
             }*/
             playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]].playerName = player.getName();
         });
-
+    
         this.gameState.seatsAbsolute = playerSeats;
         return
     }

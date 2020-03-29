@@ -83,21 +83,8 @@ class GameServer {
                 this.sendRoomListAll();
             }
         });
-
-        this.scheduleDebugInfo(client, true);
     }
 
-    scheduleDebugInfo(client, reschedule) {
-        this.debugInfo.timer = (Date.now() - startTimestamp);
-        this.debugInfo.rooms = this.roomList.getList();
-        client.emit('debugInfo', this.debugInfo);
-        if (reschedule) {
-            var _this = this;
-            setTimeout(()=> {
-                this.scheduleDebugInfo.bind(_this)(client, true);
-            }, 3000);
-        }
-    }
 
     sendOfferedGameRules(client) {
         var gameModesSendable = {};
@@ -114,7 +101,13 @@ class GameServer {
 }
 
 let gameServer = new GameServer()
-
+// makes dev's life easier
+gameServer.roomList.addRoom({
+    name: "room",
+    protection: "none",
+    password: '',
+    gameMode: 'coiffeur',
+});
   
 server.listen(4000, function(){
     console.log('listening on *:3000');
