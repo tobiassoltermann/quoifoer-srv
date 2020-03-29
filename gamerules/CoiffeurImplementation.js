@@ -120,12 +120,10 @@ class CoiffeurGamerules {
 
     // Must implement!
     onPlayerJoin(player) {
-        console.log("join", player);
+        console.log("join", player.getName());
         player.client.on('coiffeur-requestgamestate', () => {
             console.log(this.gameState);
-            this.compileGlobalSeats();
-            var localGamestate = this.compilePlayerGamestate(player);
-            player.client.emit("coiffeur-gamestate", localGamestate);
+            this.sendGameStateAll();
         })
 
         player.client.on('coiffeur-seat', (seatName, response) => {
@@ -154,11 +152,17 @@ class CoiffeurGamerules {
             this.sendGameStateAll();
         });
 
+        player.client.on('coiffeur-unseat', (response) => {
+            player.unSeat();
+            this.sendGameStateAll();
+        })
+
     }
 
     // Must implement!
     onPlayerLeave(player) {
-        console.log("leave", player);
+        player.unSeat();
+        this.sendGameStateAll();
     }
 
     compilePlayerGamestate(player) {
@@ -167,21 +171,14 @@ class CoiffeurGamerules {
         var boardSetup =
             Object.assign({},
                 this.gameState.seatsAbsolute,
-                {
-                    S: {
-                        card: 'NN',
-                    },
-                    E: {
-                        card: 'NN',
-                    },
-                    N: {
-                        card: 'NN',
-                    },
-                    W: { 
-                        card: 'NN',
-                    }
-                },
             );
+            console.log("CoiffeurImplementation.compilePlayerGamestate: ", boardSetup);
+
+        boardSetup.S.card = "NN";
+        boardSetup.E.card = "NN";
+        boardSetup.N.card = "NN";
+        boardSetup.W.card = "NN";
+        boardSetup.self = AbsoluteSeatOrder[player.getSeat()];
 
         var localGamestate = {
             gameStatus: this.gameState.status,
@@ -194,35 +191,45 @@ class CoiffeurGamerules {
 
     sendGameStateAll() {
         this.room.getAllPlayers().forEach((player) => {
+            this.compileGlobalSeats();
             var localGamestate = this.compilePlayerGamestate(player);
+            console.log("sendGameStateAll", "localGamestate", localGamestate);
             player.client.emit("coiffeur-gamestate", localGamestate);
         })
     }
 
     compileGlobalSeats() {
         var playerSeats = {
-            S: null,
-            E: null,
-            N: null,
-            W: null,
+            S: {
+                playerName: null,
+            },
+            E: {
+                playerName: null,
+            },
+            N: {
+                playerName: null,
+            },
+            W: {
+                playerName: null,
+            },
         };
         const allPlayers = this.room.getAllPlayers();
 
+        // Fetch all players' names and store locally
         allPlayers.forEach((player) => {
             var absoluteSeatIndex = player.getSeat();
             if (absoluteSeatIndex == null) {
                 return; // Unseated player.
             }
-            if (playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]] != null) {
+            /*if (playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]] != null) {
                 console.log("Double seat! ", player.getName());
                 return;
-            }
-            playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]] = {
-                playerName: player.getName()
-            };
+            }*/
+            playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]].playerName = player.getName();
         });
 
-        return this.gameState.seatsAbsolute = playerSeats;
+        this.gameState.seatsAbsolute = playerSeats;
+        return
     }
 
     sendGameState(player) {

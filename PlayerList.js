@@ -13,7 +13,7 @@ class PlayerList {
             this.players.push(player);
             client.on('disconnect', () => {
                 // When detecting a disconnect, remove socket
-                this.players.client = null;
+                player.client = null;
             });
             return {
                 status: true,
@@ -21,9 +21,10 @@ class PlayerList {
             };
         } else {
             var existingPlayer = this.players[existingPlayerIndex];
+            debugger;
             if (existingPlayer.getSeat() != null && existingPlayer.client == null) {
                 // Player exists and socket is stale. Reassign socket.
-                this.players.client = client;
+                existingPlayer.client = client;
                 return {
                     status: true,
                     player: existingPlayer
