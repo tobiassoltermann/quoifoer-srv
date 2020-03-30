@@ -10,6 +10,11 @@ class Card {
     getLevel() { return this.level };
     toString() { return this.name };
 
+    render() { return {
+        card: this.name,
+        playable: false,
+    }}
+
 }
 
 module.exports = Card;

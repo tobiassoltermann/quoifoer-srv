@@ -2,7 +2,7 @@
 
 class CardSet {
     constructor() {
-        this.cards = {};
+        this.cards = {};    
     }
 
     addCard(card) {
@@ -11,7 +11,7 @@ class CardSet {
     addAllCards(cards) {
         cards.forEach((card) => {
             this.addCard(card);
-        })
+        });
     }
     getCard(cardName) {
         return this.cards[card.name];

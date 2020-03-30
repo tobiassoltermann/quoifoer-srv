@@ -102,13 +102,14 @@ class GameServer {
 
 let gameServer = new GameServer()
 // makes dev's life easier
-gameServer.roomList.addRoom({
-    name: "room",
-    protection: "none",
-    password: '',
-    gameMode: 'coiffeur',
-});
-  
+
 server.listen(4000, function(){
     console.log('listening on *:3000');
+    debugger;
+    gameServer.roomList.addRoom({
+        name: "room",
+        protection: "none",
+        password: '',
+        gameMode: 'coiffeur',
+    });
 });
