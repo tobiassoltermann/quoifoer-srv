@@ -9,7 +9,7 @@ class Round {
 
 }
 
-const AbsoluteSeatOrder = ['S', 'E', 'N', 'W'];
+const AbsoluteSeatOrder = () => ['S', 'E', 'N', 'W'];
 
 
 
@@ -18,8 +18,7 @@ class CoiffeurGamerules {
         console.log("CoiffeurGamerules::constructor");
         this.room = room;
         this.scoresObject = new CoiffeurScores();
-        debugger;
-        this.cardSet = CoiffeurCardSet;
+        this.cardSet = new CoiffeurCardSet();
         this.gameState = {
             status: "PLAYER_SEATING",
             scores: this.scoresObject.render(),
@@ -47,7 +46,7 @@ class CoiffeurGamerules {
         })
 
         player.client.on('coiffeur-seat', (seatName, response) => {
-            var seatNo = AbsoluteSeatOrder.findIndex((crtSeatname) => { return seatName == crtSeatname });
+            var seatNo = AbsoluteSeatOrder().findIndex((crtSeatname) => { return seatName == crtSeatname });
             if (seatNo == -1) {
                 response({
                     status: false,
@@ -69,7 +68,7 @@ class CoiffeurGamerules {
                 });
                 return;
             }
-            var allSeatsOccupied = [0, 1, 2, 3].map((i)=>{return this.room.getPlayerBySeat(i)}).every( (p) => { return p != null });
+            var allSeatsOccupied = [0, 1, 2, 3].map((i) => { return this.room.getPlayerBySeat(i) }).every((p) => { return p != null });
             if (allSeatsOccupied) {
                 this.beginRound(false);
             }
@@ -109,7 +108,7 @@ class CoiffeurGamerules {
         boardSetup.E.card = "NN";
         boardSetup.N.card = "NN";
         boardSetup.W.card = "NN";
-        boardSetup.self = AbsoluteSeatOrder[player.getSeat()];
+        boardSetup.self = AbsoluteSeatOrder()[player.getSeat()];
 
         var yourTeam = (() => {
             switch (player.getSeat()) {
@@ -128,11 +127,11 @@ class CoiffeurGamerules {
         // TODO: Change PLAYER_SEATING to new "select trumpf" status.
 
         if (this.gameState.status == "PLAYER_SEATING" && yourTeam > 0) {
-            scores.scoreLines = scores.scoreLines.map( (scoreLine) => {
+            scores.scoreLines = scores.scoreLines.map((scoreLine) => {
                 const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
                 return Object.assign(
                     scoreLine,
-                    { selectable: (myScoreOnLine == null)}
+                    { selectable: (myScoreOnLine == null) }
                 )
             })
         };
@@ -146,15 +145,15 @@ class CoiffeurGamerules {
         }
         scores.team1Name = teamNames(boardSetup.N.playerName, boardSetup.S.playerName);
         scores.team2Name = teamNames(boardSetup.W.playerName, boardSetup.E.playerName);
-
+        console.log(player.getSeat());
         var localGamestate = {
             gameStatus: this.gameState.status,
             yourTeam: yourTeam,
             scores: scores,
             cardDeck:
-                player.getSeat() > 0
-                ? this.gameState.playerCardDecks["player" + player.getSeat()]
-                : ClosedCardSet(9)
+                (player.getSeat() != null && player.getSeat() >= 0)
+                    ? this.gameState.playerCardDecks["player" + player.getSeat()].map( (card) => card.render() )
+                    : ClosedCardSet(9).map((card) => card.render())
             ,
             boardSetup,
         };
@@ -177,7 +176,7 @@ class CoiffeurGamerules {
                     visible: true
                 },
             }
-        };        
+        };
         return [localGamestate, overallUIState];
     }
 
@@ -189,6 +188,18 @@ class CoiffeurGamerules {
             player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
             player.client.emit('debugInfo', localGamestate, overallUIState);
         })
+    }
+
+    compileSeatOrdering(player) {
+        function arrayRotate(arr, count) {
+            count -= arr.length * Math.floor(count / arr.length);
+            arr.push.apply(arr, arr.splice(0, count));
+            return arr;
+        }
+        var allSeats = AbsoluteSeatOrder();
+        var seatNo = player.getSeat();
+        arrayRotate(allSeats, -seatNo); // Reverse!
+        return allSeats;
     }
 
     compileGlobalSeats() {
@@ -215,9 +226,9 @@ class CoiffeurGamerules {
                 return; // Unseated player.
             }
 
-            playerSeats[AbsoluteSeatOrder[absoluteSeatIndex]].playerName = player.getName();
+            playerSeats[AbsoluteSeatOrder()[absoluteSeatIndex]].playerName = player.getName();
         });
-    
+
         this.gameState.seatsAbsolute = playerSeats;
         return
     }
@@ -232,10 +243,9 @@ class CoiffeurGamerules {
         })
     }
     distributeCards() {
-        debugger;
         // TODO: this.cardSet doesn't have getShuffledCardDeck() ?
-        const shuffledCardSet = this.cardSet.getShuffledCardDeck();
-        this.playerCardDecks = {
+        const shuffledCards = this.cardSet.getShuffledCardDeck();
+        this.gameState.playerCardDecks = {
             player0: shuffledCards.slice(0, 9),
             player1: shuffledCards.slice(9, 18),
             player2: shuffledCards.slice(18, 27),

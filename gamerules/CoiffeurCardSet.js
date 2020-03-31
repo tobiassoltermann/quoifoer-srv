@@ -6,45 +6,45 @@ class CoiffeurCardSet extends CardSet {
         super();
         this.addAllCards(
             [
-                { race: 'H', level: '6' },
-                { race: 'H', level: '7' },
-                { race: 'H', level: '8' },
-                { race: 'H', level: '9' },
-                { race: 'H', level: 'X' },
-                { race: 'H', level: 'J' },
-                { race: 'H', level: 'Q' },
-                { race: 'H', level: 'K' },
-                { race: 'H', level: 'A' },
+                new Card('H','6'),
+                new Card('H','7'),
+                new Card('H','8'),
+                new Card('H','9'),
+                new Card('H','X'),
+                new Card('H','J'),
+                new Card('H','Q'),
+                new Card('H','K'),
+                new Card('H','A'),
 
-                { race: 'S', level: '6' },
-                { race: 'S', level: '7' },
-                { race: 'S', level: '8' },
-                { race: 'S', level: '9' },
-                { race: 'S', level: 'X' },
-                { race: 'S', level: 'J' },
-                { race: 'S', level: 'Q' },
-                { race: 'S', level: 'K' },
-                { race: 'S', level: 'A' },
+                new Card('S','6'),
+                new Card('S','7'),
+                new Card('S','8'),
+                new Card('S','9'),
+                new Card('S','X'),
+                new Card('S','J'),
+                new Card('S','Q'),
+                new Card('S','K'),
+                new Card('S','A'),
 
-                { race: 'K', level: '6' },
-                { race: 'K', level: '7' },
-                { race: 'K', level: '8' },
-                { race: 'K', level: '9' },
-                { race: 'K', level: 'X' },
-                { race: 'K', level: 'J' },
-                { race: 'K', level: 'Q' },
-                { race: 'K', level: 'K' },
-                { race: 'K', level: 'A' },
+                new Card('K','6'),
+                new Card('K','7'),
+                new Card('K','8'),
+                new Card('K','9'),
+                new Card('K','X'),
+                new Card('K','J'),
+                new Card('K','Q'),
+                new Card('K','K'),
+                new Card('K','A'),
 
-                { race: 'C', level: '6' },
-                { race: 'C', level: '7' },
-                { race: 'C', level: '8' },
-                { race: 'C', level: '9' },
-                { race: 'C', level: 'X' },
-                { race: 'C', level: 'J' },
-                { race: 'C', level: 'Q' },
-                { race: 'C', level: 'K' },
-                { race: 'C', level: 'A' },
+                new Card('C','6'),
+                new Card('C','7'),
+                new Card('C','8'),
+                new Card('C','9'),
+                new Card('C','X'),
+                new Card('C','J'),
+                new Card('C','Q'),
+                new Card('C','K'),
+                new Card('C','A'),
             ].map(
                 (element) => {
                     return new Card(element.race, element.level);
@@ -53,8 +53,5 @@ class CoiffeurCardSet extends CardSet {
         );
     }
 }
-
-console.log("CoiffeurcardSet:", CoiffeurCardSet);
-debugger;
 
 module.exports = CoiffeurCardSet;

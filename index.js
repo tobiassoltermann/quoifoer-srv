@@ -105,7 +105,6 @@ let gameServer = new GameServer()
 
 server.listen(4000, function(){
     console.log('listening on *:3000');
-    debugger;
     gameServer.roomList.addRoom({
         name: "room",
         protection: "none",
