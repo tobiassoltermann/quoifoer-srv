@@ -4,29 +4,50 @@ const CardSet = require('./CardSet');
 const CoiffeurScores = require('./CoiffeurScores');
 const CoiffeurCardSet = require('./CoiffeurCardSet');
 const ClosedCardSet = require('./ClosedCardSet');
+const RoundManager = require('./RoundManager');
+const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
 
-class Round {
-
-}
 
 const AbsoluteSeatOrder = () => ['S', 'E', 'N', 'W'];
+const RelativeSeatOrder = (player) => {
+    function arrayRotate(arr, count) {
+        count -= arr.length * Math.floor(count / arr.length);
+        arr.push.apply(arr, arr.splice(0, count));
+        return arr;
+    }
+
+    var allSeats = AbsoluteSeatOrder();
+    var seatNo = player.getSeat();
+    arrayRotate(allSeats, -seatNo); // Reverse!
+    return allSeats;
+}
 
 
 
 class CoiffeurGamerules {
     constructor(room) {
         console.log("CoiffeurGamerules::constructor");
+        this.modes = new SuperSachCoiffeurModeList();
         this.room = room;
+        this.roundManager = new RoundManager(this);
         this.scoresObject = new CoiffeurScores();
         this.cardSet = new CoiffeurCardSet();
+
         this.gameState = {
             status: "PLAYER_SEATING",
             scores: this.scoresObject.render(),
-            playerCardDecks: {
+/*            playerCardDecks: {
                 player0: ClosedCardSet(9),
                 player1: ClosedCardSet(9),
                 player2: ClosedCardSet(9),
                 player3: ClosedCardSet(9),
+            },
+*/
+            playerCardDecks: {
+                player0: [],
+                player1: [],
+                player2: [],
+                player3: [],
             },
             seatsAbsolute: {
 
@@ -83,9 +104,7 @@ class CoiffeurGamerules {
     }
 
     beginRound(updateClients) {
-        this.gameState.status = "CHOOSE_TRUMP";
-        this.distributeCards();
-
+        this.roundManager.beginRound();
 
         if (updateClients) {
             this.sendGameStateAll();
@@ -99,6 +118,8 @@ class CoiffeurGamerules {
     }
 
     compilePlayerGamestate(player) {
+        this.compileSeating(player);
+
         var boardSetup =
             Object.assign({},
                 this.gameState.seatsAbsolute,
@@ -124,9 +145,8 @@ class CoiffeurGamerules {
         })()
 
         var scores = this.scoresObject.render();
-        // TODO: Change PLAYER_SEATING to new "select trumpf" status.
 
-        if (this.gameState.status == "PLAYER_SEATING" && yourTeam > 0) {
+        if (this.gameState.status == "CHOOSE_TRUMP" && yourTeam > 0) {
             scores.scoreLines = scores.scoreLines.map((scoreLine) => {
                 const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
                 return Object.assign(
@@ -152,8 +172,8 @@ class CoiffeurGamerules {
             scores: scores,
             cardDeck:
                 (player.getSeat() != null && player.getSeat() >= 0)
-                    ? this.gameState.playerCardDecks["player" + player.getSeat()].map( (card) => card.render() )
-                    : ClosedCardSet(9).map((card) => card.render())
+                    ? this.gameState.playerCardDecks["player" + player.getSeat()].map((card) => card.render())
+                    : []
             ,
             boardSetup,
         };
@@ -182,7 +202,6 @@ class CoiffeurGamerules {
 
     sendGameStateAll() {
         this.room.getAllPlayers().forEach((player) => {
-            this.compileGlobalSeats();
             var [localGamestate, overallUIState] = this.compilePlayerGamestate(player);
             console.log("sendGameStateAll", "localGamestate", localGamestate, overallUIState);
             player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
@@ -190,19 +209,15 @@ class CoiffeurGamerules {
         })
     }
 
-    compileSeatOrdering(player) {
-        function arrayRotate(arr, count) {
-            count -= arr.length * Math.floor(count / arr.length);
-            arr.push.apply(arr, arr.splice(0, count));
-            return arr;
-        }
-        var allSeats = AbsoluteSeatOrder();
-        var seatNo = player.getSeat();
-        arrayRotate(allSeats, -seatNo); // Reverse!
-        return allSeats;
-    }
-
-    compileGlobalSeats() {
+    compileSeating(player) {
+        var SeatOrderMechanism = (() => {
+            switch (this.gameState.status) {
+                case "PLAYER_SEATING":
+                    return AbsoluteSeatOrder();
+                case "CHOOSE_TRUMP":
+                    return RelativeSeatOrder(player);
+            }
+        })();
         var playerSeats = {
             S: {
                 playerName: null,
@@ -221,12 +236,12 @@ class CoiffeurGamerules {
         // Fetch all players' names and store locally
         const allPlayers = this.room.getAllPlayers();
         allPlayers.forEach((player) => {
-            var absoluteSeatIndex = player.getSeat();
-            if (absoluteSeatIndex == null) {
+            var playerSeatIndex = player.getSeat();
+            if (playerSeatIndex == null) {
                 return; // Unseated player.
             }
 
-            playerSeats[AbsoluteSeatOrder()[absoluteSeatIndex]].playerName = player.getName();
+            playerSeats[SeatOrderMechanism[playerSeatIndex]].playerName = player.getName();
         });
 
         this.gameState.seatsAbsolute = playerSeats;

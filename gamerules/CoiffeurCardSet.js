@@ -45,11 +45,7 @@ class CoiffeurCardSet extends CardSet {
                 new Card('C','Q'),
                 new Card('C','K'),
                 new Card('C','A'),
-            ].map(
-                (element) => {
-                    return new Card(element.race, element.level);
-                }
-            )
+            ]
         );
     }
 }

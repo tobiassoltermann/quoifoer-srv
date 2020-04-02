@@ -42,6 +42,17 @@ class CardSet {
     allCards() {
         Object.values(this.cards);
     }
+
+    hasSpecificCardByName(name) {
+        return (this.cards.filter( (card) => card.name ==  name)) == 1;
+    }
+    hasSpecificCardByRaceLevel(race, level) {
+        return this.hasSpecificCardByName(race+level);
+    }
+
+    hasCardsFromRace(race) {
+        return (this.cards.filter( (card) => card.race ==  race)) > 0;
+    }
 }
 
 module.exports = CardSet;
