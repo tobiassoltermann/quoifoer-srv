@@ -103,7 +103,7 @@ class GameServer {
 let gameServer = new GameServer()
 // makes dev's life easier
 
-server.listen(4000, function(){
+server.listen(4000, '0.0.0.0', function(){
     console.log('listening on *:3000');
     gameServer.roomList.addRoom({
         name: "room",

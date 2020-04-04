@@ -44,10 +44,10 @@ class CoiffeurGamerules {
             },
 */
             playerCardDecks: {
-                player0: [],
-                player1: [],
-                player2: [],
-                player3: [],
+                player0: new CardSet(),
+                player1: new CardSet(),
+                player2: new CardSet(),
+                player3: new CardSet(),
             },
             seatsAbsolute: {
 
@@ -146,7 +146,7 @@ class CoiffeurGamerules {
 
         var scores = this.scoresObject.render();
 
-        if (this.gameState.status == "CHOOSE_TRUMP" && yourTeam > 0) {
+        if (this.gameState.status == "CHOOSE_TRICK" && yourTeam > 0) {
             scores.scoreLines = scores.scoreLines.map((scoreLine) => {
                 const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
                 return Object.assign(
@@ -166,13 +166,14 @@ class CoiffeurGamerules {
         scores.team1Name = teamNames(boardSetup.N.playerName, boardSetup.S.playerName);
         scores.team2Name = teamNames(boardSetup.W.playerName, boardSetup.E.playerName);
         console.log(player.getSeat());
+
         var localGamestate = {
             gameStatus: this.gameState.status,
             yourTeam: yourTeam,
             scores: scores,
             cardDeck:
                 (player.getSeat() != null && player.getSeat() >= 0)
-                    ? this.gameState.playerCardDecks["player" + player.getSeat()].map((card) => card.render())
+                    ? this.gameState.playerCardDecks["player" + player.getSeat()].render()
                     : []
             ,
             boardSetup,
@@ -188,7 +189,7 @@ class CoiffeurGamerules {
                 },
             }
         };
-        if (this.gameState.status == "CHOOSE_TRUMP") {
+        if (this.gameState.status == "CHOOSE_TRICK") {
             overallUIState = {
                 statusText: {
                     label: "Choose trick, or push.",
@@ -214,7 +215,7 @@ class CoiffeurGamerules {
             switch (this.gameState.status) {
                 case "PLAYER_SEATING":
                     return AbsoluteSeatOrder();
-                case "CHOOSE_TRUMP":
+                case "CHOOSE_TRICK":
                     return RelativeSeatOrder(player);
             }
         })();
@@ -258,8 +259,7 @@ class CoiffeurGamerules {
         })
     }
     distributeCards() {
-        // TODO: this.cardSet doesn't have getShuffledCardDeck() ?
-        const shuffledCards = this.cardSet.getShuffledCardDeck();
+        const shuffledCards = this.cardSet.shuffle();
         this.gameState.playerCardDecks = {
             player0: shuffledCards.slice(0, 9),
             player1: shuffledCards.slice(9, 18),

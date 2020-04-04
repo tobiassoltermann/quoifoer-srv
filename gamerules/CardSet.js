@@ -19,11 +19,13 @@ function shuffleFisherYates(array) {
 
 class CardSet {
     constructor() {
-        this.cards = {};
+        //this.cards = {};
+        this.cards = [];
     }
 
     addCard(card) {
-        this.cards[card.name] = card;
+        //this.cards[card.name] = card;
+        this.cards.push(card);
     }
     addAllCards(cards) {
         cards.forEach((card) => {
@@ -31,27 +33,41 @@ class CardSet {
         });
     }
     getCard(cardName) {
-        return this.cards[card.name];
+        //return this.cards[card.name];
+        return this.cards.find( (card) => { return card.name == cardName } );
+    }
+    shuffle() {
+        shuffleFisherYates(this.cards);
+        return this;
     }
 
-    getShuffledCardDeck() {
-        var cardsArray = Object.keys(this.cards);
-        cardsArray = shuffleFisherYates(cardsArray);
-        return cardsArray.map( (key) => {return this.cards[key]});
-    }
     allCards() {
-        Object.values(this.cards);
+        //Object.values(this.cards);
+        return this.cards.slice();
     }
 
-    hasSpecificCardByName(name) {
-        return (this.cards.filter( (card) => card.name ==  name)) == 1;
+    hasSpecificCardByName(cardName) {
+        //return (this.cards.filter( (card) => card.name ==  name)) == 1;
+        return this.cards.findIndex( (card) => { return card.name == cardName}) >= 0;
     }
     hasSpecificCardByRaceLevel(race, level) {
         return this.hasSpecificCardByName(race+level);
     }
 
     hasCardsFromRace(race) {
-        return (this.cards.filter( (card) => card.race ==  race)) > 0;
+        return (this.cards.filter( (card) => { return card.race == race} )) > 0;
+    }
+
+    slice(start, end) {
+        var subSet = new CardSet();
+        subSet.addAllCards( this.cards.slice(start, end) );
+        return subSet;
+    }
+
+    render() {
+        return this.cards.map( (card) => {
+            return card.render();
+        });
     }
 }
 
