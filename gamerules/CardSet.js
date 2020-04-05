@@ -47,6 +47,12 @@ class CardSet {
             this.addCard(card);
         });
     }
+
+    removeCard(card) {
+        this.cards = this.cards.filter( (crtCard) => {
+            return crtCard.name != card.name;
+        });
+    }
     getCard(cardName) {
         //return this.cards[card.name];
         return this.cards.find( (card) => { return card.name == cardName } );
@@ -59,6 +65,10 @@ class CardSet {
     allCards() {
         //Object.values(this.cards);
         return this.cards.slice();
+    }
+
+    getSpecificCardByName(cardName) {
+        return this.cards.find( (card) => { return card.name == cardName});
     }
 
     hasSpecificCardByName(cardName) {

@@ -5,9 +5,8 @@ class RoundManager {
         this.gR = gameRules;
         this.roundIndex = -1;
         this.roundMax = gameRules.modes.length();
-
     }
-    
+
     beginRound() {
         const gameState = this.gR.gameState;
         this.roundIndex++;
@@ -20,18 +19,9 @@ class RoundManager {
         this.startingSeat = (gameState.firstEverPlayerSeat + this.roundIndex) % this.gR.room.maxPlayers();
         gameState.turnSeat = this.startingSeat;
         gameState.roundPlayerCanPush = true;
-        
+
 
         console.log("Selecting player seat is:", gameState.turnSeat);
-    }
-
-    trickSelected(multiplier) {
-        const gameState = this.gR.gameState;
-        console.log("RoundManager.trickSelected", multiplier);
-        this.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
-        gameState.roundPlayerCanPush = false;
-        gameState.status = "PLAY_ROUND";
-        gameState.trickStarter = gameState.turnSeat;
     }
 
     pushSelected() {
@@ -43,13 +33,29 @@ class RoundManager {
             gameState.roundPlayerCanPush = false;
         }
     }
+    trickSelected(multiplier) {
+        const gameState = this.gR.gameState;
+        console.log("RoundManager.trickSelected", multiplier);
+        this.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
+        gameState.roundPlayerCanPush = false;
+        gameState.status = "PLAY_ROUND";
+        gameState.trickStarter = gameState.turnSeat;
+        this.playedCards = [];
+    }
 
-    playCard() {
+    playCard(card) {
+        console.log("RoundManager.playCard", card);
+        const gameState = this.gR.gameState;
+        const cardDecks = gameState.playerCardDecks;
+        const currentPlayerCarddeck = cardDecks["player" + gameState.turnSeat];
+        currentPlayerCarddeck.removeCard(card);
+
 
     }
 
+
     checkCanPlayCard(player, card) {
-        return card.getRace() == this.gameModeImplementation.checkCanPlayCard(player, card);
+        return this.gameModeImplementation.checkCanPlayCard(player, card);
     }
 
     whoHasCard(cardName) {

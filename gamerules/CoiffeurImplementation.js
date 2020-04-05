@@ -85,6 +85,22 @@ class CoiffeurGamerules {
             this.roundManager.trickSelected(multiplier);
             this.sendGameStateAll();
         });
+
+        player.client.on('coiffeur-playcard', (cardName, response) => {
+            console.log("coiffeur-playcard", cardName);
+            const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
+            const card = playerCardDeck.getSpecificCardByName(cardName);
+
+            if (card != undefined) {
+                this.roundManager.playCard(card);
+                this.sendGameStateAll();
+            } else {
+                response({
+                    status: false,
+                    message: "You don't seem to have this card",
+                });
+            }
+        });
     }
 
     beginRound(updateClients) {
@@ -184,6 +200,7 @@ class CoiffeurGamerules {
         const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
         if (this.gameState.status == "PLAY_ROUND") {
             localGamestate.myTurn = player.getSeat() == this.gameState.turnSeat;
+            localGamestate.canPush = false;
             if (localGamestate.myTurn) {
                 
                 // TODO: Card does not become playable.
@@ -193,7 +210,7 @@ class CoiffeurGamerules {
                 overallUIState = {
                     statusText: {
                         label: "Play card",
-                        icon: null,
+                        icon: this.roundManager.gameModeImplementation.getIcon(),
                         visible: true,
                         highlight: true,
                     },
@@ -204,7 +221,7 @@ class CoiffeurGamerules {
                 overallUIState = {
                     statusText: {
                         label: "Player " + playersName + " to play card",
-                        icon: null,
+                        icon: this.roundManager.gameModeImplementation.getIcon(),
                         visible: true,
                     },
                 }
@@ -233,7 +250,7 @@ class CoiffeurGamerules {
     sendGameStateAll() {
         this.room.getAllPlayers().forEach((player) => {
             var [localGamestate, overallUIState] = this.compilePlayerGamestate(player);
-            console.log("sendGameStateAll", "localGamestate", localGamestate, overallUIState);
+//            console.log("sendGameStateAll", "localGamestate", localGamestate, overallUIState);
             player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
             player.client.emit('debugInfo', localGamestate, overallUIState);
         })
