@@ -4,6 +4,7 @@ class Card {
         this.race = race;
         this.level = level;
         this.name = race + level;
+        this.playable = false;
     }
 
     getRace() { return this.race };
@@ -12,7 +13,7 @@ class Card {
 
     render() { return {
         card: this.name,
-        playable: false,
+        playable: this.playable,
     }}
 
 }

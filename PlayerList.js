@@ -42,17 +42,17 @@ class PlayerList {
         var existingPlayerIndex = this.findIndexByName(playerName);
         return this.players[existingPlayerIndex];
     }
+    getPlayerByIndex(index) {
+        return this.players[index];
+    }
 
-    getPlayerBySeat(seatNo) {
-        console.log("Player.getPlayerBySeat: ", seatNo);
-        console.log("this.players:", this.players);
+    getPlayerIndexBySeat(seatNo) {
         var result = this.players.findIndex( (player) => { return player.seat == seatNo } );
         if (result >= 0) {
-            this.players[result]
+            return result;
         } else {
             return null;
         }
-        console.log("result", result);
         return result
     }
 

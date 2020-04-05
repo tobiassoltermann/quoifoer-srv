@@ -5,34 +5,56 @@ class RoundManager {
         this.gR = gameRules;
         this.roundIndex = -1;
         this.roundMax = gameRules.modes.length();
+
     }
-
+    
     beginRound() {
+        const gameState = this.gR.gameState;
         this.roundIndex++;
-        this.gR.gameState.status = "CHOOSE_TRICK";
+        gameState.status = "CHOOSE_TRICK";
         this.gR.distributeCards();
-
         if (this.roundIndex == 0) {
             var seatIndex = this.whoHasCard("K7");
-            this.gR.firstEverPlayerSeat = seatIndex;
+            gameState.firstEverPlayerSeat = seatIndex;
         }
-        this.selectingPlayerSeat = (this.gR.firstEverPlayerSeat + this.roundIndex) % this.gR.room.maxPlayers();
+        this.startingSeat = (gameState.firstEverPlayerSeat + this.roundIndex) % this.gR.room.maxPlayers();
+        gameState.turnSeat = this.startingSeat;
+        gameState.roundPlayerCanPush = true;
+        
 
-        console.log("Selecting player seat is:", this.selectingPlayerSeat);
-        this.awaitTrickSelection();
+        console.log("Selecting player seat is:", gameState.turnSeat);
     }
 
-    setRoundTrick(trickName) {
-        this.trickName = trickName;
+    trickSelected(multiplier) {
+        const gameState = this.gR.gameState;
+        console.log("RoundManager.trickSelected", multiplier);
+        this.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
+        gameState.roundPlayerCanPush = false;
+        gameState.status = "PLAY_ROUND";
+        gameState.trickStarter = gameState.turnSeat;
     }
 
-    awaitTrickSelection() {
+    pushSelected() {
+        console.log("RoundManager.pushSelected");
+        const gameState = this.gR.gameState;
+        var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
+        gameState.turnSeat = nextPlayerSeat;
+        if (nextPlayerSeat == this.startingSeat) {
+            gameState.roundPlayerCanPush = false;
+        }
+    }
 
+    playCard() {
+
+    }
+
+    checkCanPlayCard(player, card) {
+        return card.getRace() == this.gameModeImplementation.checkCanPlayCard(player, card);
     }
 
     whoHasCard(cardName) {
-        const cardDecks = this.gR.gameState.playerCardDecks;
-        debugger;
+        const gameState = this.gR.gameState;
+        const cardDecks = gameState.playerCardDecks;
         var seatIndexFound = -1;
         for (var seatIndex = 0; seatIndex < 4; seatIndex++) {
             const currentDeck = cardDecks["player" + seatIndex];

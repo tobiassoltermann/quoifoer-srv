@@ -10,6 +10,8 @@ class Mode {
     getMultiplier() { return this.multiplier; }
     getIcon() { return this.icon; }
     getName() { return this.name; }
+
+    checkCanPlayCard(player, card) { return false; }
 }
 
 module.exports = Mode;

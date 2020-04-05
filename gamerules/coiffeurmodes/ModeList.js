@@ -16,6 +16,13 @@ class ModeList {
         
     }
 
+    getModeByMultiplier(multiplier) {
+        var foundMode = Object.values(this.modes).find( (crtMode) => {
+            return crtMode.getMultiplier() == multiplier;
+        } )
+        return foundMode
+    }
+
     length() { 
         return this.modes.length;
     }

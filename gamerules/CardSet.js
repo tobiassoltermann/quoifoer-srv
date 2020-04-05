@@ -17,6 +17,21 @@ function shuffleFisherYates(array) {
     return array;
 }
 
+function sortByRaceLevel(array) {
+    const HIGH_ORDERS = [ 'H', 'S', 'C', 'K' ];
+    const LOW_ORDERS = [ '6', '7', '8', '9', 'X', 'J', 'Q', 'K', 'A'];
+    
+    const absoluteValue = (card) => {
+        const race = card.getRace();
+        const level = card.getLevel();
+        return (HIGH_ORDERS.findIndex( (hO) => race == hO )+1) * 100 + (LOW_ORDERS.findIndex( (lO) => level == lO ) + 1);
+    }
+
+    array.sort( (a, b) => {
+        return absoluteValue(a) - absoluteValue(b);
+    });
+}
+
 class CardSet {
     constructor() {
         //this.cards = {};
@@ -62,6 +77,11 @@ class CardSet {
         var subSet = new CardSet();
         subSet.addAllCards( this.cards.slice(start, end) );
         return subSet;
+    }
+
+    sort() {
+        sortByRaceLevel(this.cards);
+        return this;
     }
 
     render() {
