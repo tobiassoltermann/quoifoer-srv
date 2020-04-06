@@ -10,7 +10,6 @@ const { getTeamBySeat, createTeamNames, shortenPlayername, getSeatOrderMechanism
 
 class CoiffeurGamerules {
     constructor(room) {
-        console.log("CoiffeurGamerules::constructor");
         this.modes = new SuperSachCoiffeurModeList();
         this.scoresObject = new CoiffeurScores();
         this.cardSet = new CoiffeurCardSet();
@@ -28,7 +27,18 @@ class CoiffeurGamerules {
                 
             },
             tableCardDeck: {
-                
+                S: {
+                    card: this.cardSet.getSpecificCardByName("H6"),
+                },
+                E: {
+                    card: this.cardSet.getSpecificCardByName("S7"),
+                },
+                N: {
+                    card: this.cardSet.getSpecificCardByName("C8"),
+                },
+                W: {
+                    card: this.cardSet.getSpecificCardByName("K9"),
+                },
             }
         };
         this.roundManager = new RoundManager(this);
@@ -125,26 +135,22 @@ class CoiffeurGamerules {
                 this.gameState.seatsAbsolute,
             );
 
-        boardSetup.S.card = "NN";
-        boardSetup.E.card = "NN";
-        boardSetup.N.card = "NN";
-        boardSetup.W.card = "NN";
+        const absSO = AbsoluteSeatOrder();
+        //const relSO = RelativeSeatOrder(player);
+        const relSO = getSeatOrderMechanism(this.gameState.status, player);
+        for (var i = 0; i < 4; i++) {
+            const thisCard = this.gameState.tableCardDeck[absSO[i]].card;
+            if (thisCard != null) {
+                boardSetup[relSO[i]].card = thisCard.renderName();
+            } else {
+                boardSetup[relSO[i]].card = null;
+            }
+        }
+
         boardSetup.self = AbsoluteSeatOrder()[player.getSeat()];
 
-        var yourTeam = getTeamBySeat(player.getSeat());
 
         var scores = this.scoresObject.render();
-
-        if (this.gameState.status == "CHOOSE_TRICK" && yourTeam > 0) {
-            scores.scoreLines = scores.scoreLines.map((scoreLine) => {
-                const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
-                return Object.assign(
-                    scoreLine,
-                    { selectable: (myScoreOnLine == null) }
-                )
-            })
-        };
-
         scores.team1Name = createTeamNames(boardSetup.N.playerName, boardSetup.S.playerName);
         scores.team2Name = createTeamNames(boardSetup.W.playerName, boardSetup.E.playerName);
 
@@ -169,8 +175,26 @@ class CoiffeurGamerules {
                 }
             }
         };
+
+        var yourTeam = getTeamBySeat(player.getSeat());
+        if (yourTeam > 0) {
+            scores.scoreLines = scores.scoreLines.map((scoreLine) => {
+                const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
+                const selectable = 
+                    (myScoreOnLine == null)
+                    && this.gameState.status == "CHOOSE_TRICK"
+                    && player.getSeat() == this.gameState.turnSeat
+
+                return Object.assign(
+                    scoreLine,
+                    { selectable: selectable }
+                )
+            })
+        }
+
         if (this.gameState.status == "CHOOSE_TRICK") {
             console.log("this.gameState", player.getSeat(), this.gameState);
+
 
             localGamestate.myTurn = player.getSeat() == this.gameState.turnSeat;
             localGamestate.canPush = this.gameState.roundPlayerCanPush && localGamestate.myTurn;
@@ -218,6 +242,10 @@ class CoiffeurGamerules {
             } else {
                 const playersTurn = this.room.getPlayerBySeat(this.gameState.turnSeat);
                 const playersName = playersTurn.getName();
+
+                playerCardDeck.cards.forEach( (card, index) => {
+                    playerCardDeck.cards[index].playable = false;
+                });
                 overallUIState = {
                     statusText: {
                         label: "Player " + playersName + " to play card",

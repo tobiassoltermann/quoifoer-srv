@@ -1,4 +1,10 @@
-
+const {
+    getSeatOrderMechanism,
+    AbsoluteSeatOrder,
+    RelativeSeatOrder,
+    getCompassBySeat,
+    getNullCard,
+} = require('./CoiffeurHelpers');
 class RoundManager {
 
     constructor(gameRules) {
@@ -20,6 +26,7 @@ class RoundManager {
         gameState.turnSeat = this.startingSeat;
         gameState.roundPlayerCanPush = true;
 
+        this.updatePlayedCards();
 
         console.log("Selecting player seat is:", gameState.turnSeat);
     }
@@ -28,10 +35,13 @@ class RoundManager {
         console.log("RoundManager.pushSelected");
         const gameState = this.gR.gameState;
         var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
+        
         gameState.turnSeat = nextPlayerSeat;
         if (nextPlayerSeat == this.startingSeat) {
             gameState.roundPlayerCanPush = false;
         }
+
+        this.updatePlayedCards();
     }
     trickSelected(multiplier) {
         const gameState = this.gR.gameState;
@@ -43,19 +53,55 @@ class RoundManager {
         this.playedCards = [];
     }
 
+    updatePlayedCards() {
+        const gameState = this.gR.gameState;
+        const tcd = gameState.tableCardDeck;
+        tcd.S.card = null;
+        tcd.E.card = null;
+        tcd.N.card = null;
+        tcd.W.card = null;
+        tcd[getCompassBySeat(gameState.turnSeat)].card = getNullCard();
+    }
+
     playCard(card) {
-        console.log("RoundManager.playCard", card);
         const gameState = this.gR.gameState;
         const cardDecks = gameState.playerCardDecks;
+        const tcd = gameState.tableCardDeck;
+
         const currentPlayerCarddeck = cardDecks["player" + gameState.turnSeat];
         currentPlayerCarddeck.removeCard(card);
+        tcd[getCompassBySeat(gameState.turnSeat)].card = card;
 
+        const playedCards = Object
+            .values(gameState.tableCardDeck)
+            .filter( (deckObj) => { return deckObj.card != null && deckObj.card.name != "NN" } )
+            
+        if (playedCards.length >= 4 ) {
+            this.endStich(playedCards);
+        } else {
+            var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
+            gameState.turnSeat = nextPlayerSeat;
+            tcd[getCompassBySeat(gameState.turnSeat)].card = getNullCard();
+        }
+    }
 
+    endStich() {
+        const gameState = this.gR.gameState;
+        console.log("End stich");
+
+        const winningSeat = this.gameModeImplementation.checkWinner(gameState.tableCardDeck, gameState.trickStarter);
+        console.log("winningSeat:", winningSeat);
+        // TOD: create new round
+    }
+    endRound() {
+        console.log("End round");
     }
 
 
     checkCanPlayCard(player, card) {
-        return this.gameModeImplementation.checkCanPlayCard(player, card);
+        const gameState = this.gR.gameState;
+
+        return this.gameModeImplementation.checkCanPlayCard(gameState.tableCardDeck, player, card);
     }
 
     whoHasCard(cardName) {

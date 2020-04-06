@@ -1,3 +1,6 @@
+const Card = require('./Card');
+
+
 function getTeamBySeat (seat) {
     switch (seat) {
         case 0:
@@ -34,6 +37,10 @@ function getSeatOrderMechanism(status, player) {
     }
 }
 
+function getCompassBySeat(seatID) {
+    return AbsoluteSeatOrder()[seatID];
+}
+
 function createPlayerSeats() {
     return {
         S: {
@@ -68,6 +75,9 @@ function RelativeSeatOrder(player) {
     return allSeats;
 }
 
+function getNullCard() {
+    return new Card("N", "N");
+}
 
 
 
@@ -77,7 +87,9 @@ module.exports = {
     createTeamNames,
     createPlayerSeats,
     getSeatOrderMechanism,
-
+    getCompassBySeat,
     AbsoluteSeatOrder,
     RelativeSeatOrder,
+    getNullCard,
+    arrayRotate,
 }

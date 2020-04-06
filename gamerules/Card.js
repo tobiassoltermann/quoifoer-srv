@@ -16,6 +16,10 @@ class Card {
         playable: this.playable,
     }}
 
+    renderName() {
+        return this.name;
+    }
+
 }
 
 module.exports = Card;
