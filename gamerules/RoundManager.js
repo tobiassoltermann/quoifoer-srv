@@ -5,6 +5,9 @@ const {
     getCompassBySeat,
     getNullCard,
 } = require('./CoiffeurHelpers');
+
+const StichManager = require('./StichManager');
+
 class RoundManager {
 
     constructor(gameRules) {
@@ -12,8 +15,9 @@ class RoundManager {
         this.roundIndex = -1;
         this.roundMax = gameRules.modes.length();
     }
-
+    
     beginRound() {
+        this.stichMgr = new StichManager(this.gR);
         const gameState = this.gR.gameState;
         this.roundIndex++;
         gameState.status = "CHOOSE_TRICK";
@@ -46,11 +50,13 @@ class RoundManager {
     trickSelected(multiplier) {
         const gameState = this.gR.gameState;
         console.log("RoundManager.trickSelected", multiplier);
-        this.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
+        this.gR.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
         gameState.roundPlayerCanPush = false;
         gameState.status = "PLAY_ROUND";
+
         gameState.trickStarter = gameState.turnSeat;
-        this.playedCards = [];
+        this.roundMultiplier = multiplier;
+        this.stichMgr.beginStich();
     }
 
     updatePlayedCards() {
@@ -64,44 +70,26 @@ class RoundManager {
     }
 
     playCard(card) {
-        const gameState = this.gR.gameState;
-        const cardDecks = gameState.playerCardDecks;
-        const tcd = gameState.tableCardDeck;
-
-        const currentPlayerCarddeck = cardDecks["player" + gameState.turnSeat];
-        currentPlayerCarddeck.removeCard(card);
-        tcd[getCompassBySeat(gameState.turnSeat)].card = card;
-
-        const playedCards = Object
-            .values(gameState.tableCardDeck)
-            .filter( (deckObj) => { return deckObj.card != null && deckObj.card.name != "NN" } )
-            
-        if (playedCards.length >= 4 ) {
-            this.endStich(playedCards);
-        } else {
-            var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
-            gameState.turnSeat = nextPlayerSeat;
-            tcd[getCompassBySeat(gameState.turnSeat)].card = getNullCard();
+        this.stichMgr.playCard(card);
+        if (this.stichMgr.isEndRound()) {
+            this.endRound();
         }
     }
 
-    endStich() {
-        const gameState = this.gR.gameState;
-        console.log("End stich");
-
-        const winningSeat = this.gameModeImplementation.checkWinner(gameState.tableCardDeck, gameState.trickStarter);
-        console.log("winningSeat:", winningSeat);
-        // TOD: create new round
-    }
     endRound() {
         console.log("End round");
-    }
 
+        const { team1Scores, team2Scores} = this.stichMgr.calculateScores();
+
+        this.gR.scoresObject.updateScore(multiplier, {
+            scoreTeam1: team1Scores,
+            scoreTeam2: team2Scores,
+        });
+    }
 
     checkCanPlayCard(player, card) {
         const gameState = this.gR.gameState;
-
-        return this.gameModeImplementation.checkCanPlayCard(gameState.tableCardDeck, player, card);
+        return this.gR.gameModeImplementation.checkCanPlayCard(player, gameState.tableCardDeck, card, gameState.stichStarter);
     }
 
     whoHasCard(cardName) {

@@ -227,14 +227,13 @@ class CoiffeurGamerules {
             localGamestate.canPush = false;
             if (localGamestate.myTurn) {
                 
-                // TODO: Card does not become playable.
                 playerCardDeck.cards.forEach( (card, index) => {
-                    playerCardDeck.cards[index].playable = this.roundManager.checkCanPlayCard(player, card);
+                    playerCardDeck.cards[index].playable = this.roundManager.checkCanPlayCard(playerCardDeck, card);
                 });
                 overallUIState = {
                     statusText: {
                         label: "Play card",
-                        icon: this.roundManager.gameModeImplementation.getIcon(),
+                        icon: this.gameModeImplementation.getIcon(),
                         visible: true,
                         highlight: true,
                     },
@@ -249,7 +248,7 @@ class CoiffeurGamerules {
                 overallUIState = {
                     statusText: {
                         label: "Player " + playersName + " to play card",
-                        icon: this.roundManager.gameModeImplementation.getIcon(),
+                        icon: this.gameModeImplementation.getIcon(),
                         visible: true,
                     },
                 }

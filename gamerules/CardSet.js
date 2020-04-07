@@ -57,11 +57,6 @@ class CardSet {
         //return this.cards[card.name];
         return this.cards.find( (card) => { return card.name == cardName } );
     }
-    shuffle() {
-        shuffleFisherYates(this.cards);
-        return this;
-    }
-
     allCards() {
         //Object.values(this.cards);
         return this.cards.slice();
@@ -70,7 +65,7 @@ class CardSet {
     getSpecificCardByName(cardName) {
         return this.cards.find( (card) => { return card.name == cardName});
     }
-
+    
     hasSpecificCardByName(cardName) {
         //return (this.cards.filter( (card) => card.name ==  name)) == 1;
         return this.cards.findIndex( (card) => { return card.name == cardName}) >= 0;
@@ -80,7 +75,34 @@ class CardSet {
     }
 
     hasCardsFromRace(race) {
-        return (this.cards.filter( (card) => { return card.race == race} )) > 0;
+        return this.allCardsFromRace(race).length() > 0;
+    }
+
+    render() {
+        return this.cards.map( (card) => {
+            return card.render();
+        });
+    }
+
+    length() {
+        return this.cards.length;
+    }
+
+// Returns a set
+    shuffle() {
+        shuffleFisherYates(this.cards);
+        return this;
+    }
+
+    allCardsFromRace(race) {
+        var subSet = new CardSet();
+        subSet.addAllCards( this.cards.filter(
+            (card) => {
+                const differentRace = card.race == race;
+                return differentRace;
+            }) );
+        
+        return subSet;
     }
 
     slice(start, end) {
@@ -94,11 +116,7 @@ class CardSet {
         return this;
     }
 
-    render() {
-        return this.cards.map( (card) => {
-            return card.render();
-        });
-    }
+
 }
 
 module.exports = CardSet;
