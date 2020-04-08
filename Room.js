@@ -50,12 +50,13 @@ class Room {
         status.remainingPlayerNo = this.players.getTotalNumber();
         return status;
     }
-    getPlayerBySeat(index) {
-        return this.players.getPlayerByIndex(index);
+
+    getTotalNumberSeated() {
+        return this.players.getTotalNumberSeated();
     }
 
-    getPlayerIndexBySeat(seatNo) {
-        return this.players.getPlayerIndexBySeat(seatNo);
+    getPlayerBySeat(seatNo) {
+        return this.players.getPlayerBySeat(seatNo);
     }
 
     getAllPlayers() {

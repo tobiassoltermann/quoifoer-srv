@@ -10,19 +10,6 @@ const CardSet = require('./gamerules/CardSet');
 const Card = require('./gamerules/Card');
 
 this.cardSet = new CoiffeurCardSet();
-this.gameState = {
-    status: "PLAYER_SEATING",
-    playerCardDecks: {
-        player0: new CardSet(),
-        player1: new CardSet(),
-        player2: new CardSet(),
-        player3: new CardSet(),
-    },
-    seatsAbsolute: {
-        
-    },
-    
-};
 
 const CoiffeurSet = new CoiffeurCardSet();
 

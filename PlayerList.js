@@ -42,20 +42,12 @@ class PlayerList {
         var existingPlayerIndex = this.findIndexByName(playerName);
         return this.players[existingPlayerIndex];
     }
-    getPlayerByIndex(index) {
-        return this.players[index];
-    }
 
-    getPlayerIndexBySeat(seatNo) {
-        var result = this.players.findIndex( (player) => { return player.seat == seatNo } );
-        if (result >= 0) {
-            return result;
-        } else {
-            return null;
-        }
-        return result
+    getPlayerBySeat(seatNo) {
+        var result = this.players.find( (player) => { return player.seat == seatNo } );
+        return result;
     }
-
+    
     removePlayerByClient(playerName, client) {
         var existingPlayerIndex = this.findByClient(client);
         if (existingPlayerIndex != -1 ) {
@@ -89,11 +81,11 @@ class PlayerList {
     }
 
     getTotalNumberSeated() {
-        return this.players.filter( (player) => { return player.seat == false } ).length;
+        return this.players.filter( (player) => { return player.seat !== null } ).length;
     }
 
     getTotalNumberUnseated() {
-        return this.players.filter( (player) => {return player.seat == true } ).length;
+        return this.players.filter( (player) => {return player.seat === null } ).length;
     }
 
     getAllPlayers() {

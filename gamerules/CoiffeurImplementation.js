@@ -6,7 +6,7 @@ const CoiffeurCardSet = require('./CoiffeurCardSet');
 const ClosedCardSet = require('./ClosedCardSet');
 const RoundManager = require('./RoundManager');
 const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
-const { getTeamBySeat, createTeamNames, shortenPlayername, getSeatOrderMechanism, createPlayerSeats, AbsoluteSeatOrder, RelativeSeatOrder } = require('./CoiffeurHelpers');
+const { getTeamBySeat, createTeamNames, shortenPlayername, getSeatOrderMechanism, createEmptyPlayerSeats, AbsoluteSeatOrder, RelativeSeatOrder } = require('./CoiffeurHelpers');
 
 class CoiffeurGamerules {
     constructor(room) {
@@ -51,16 +51,16 @@ class CoiffeurGamerules {
             this.sendGameStateAll();
         })
 
-        player.client.on('coiffeur-seat', (seatName, response) => {
-            var seatNo = AbsoluteSeatOrder().findIndex((crtSeatname) => { return seatName == crtSeatname });
+        player.client.on('coiffeur-seat', (compass, response) => {
+            var seatNo = AbsoluteSeatOrder().findIndex((crt) => { return compass == crt }); // XLATE: compassToSeatNo()
             if (seatNo == -1) {
                 response({
                     status: false,
-                    message: "Seat " + seatName + " doesn't exist"
+                    message: "Seat " + compass + " doesn't exist"
                 });
                 return;
             }
-            if (this.room.getPlayerIndexBySeat(seatNo) == null) {
+            if (this.room.getPlayerBySeat(seatNo) === undefined) {
                 // Can seat as it's free
                 player.assignSeat(seatNo);
                 response({
@@ -74,8 +74,8 @@ class CoiffeurGamerules {
                 });
                 return;
             }
-            var allSeatsOccupied = [0, 1, 2, 3].map((i) => { return this.room.getPlayerIndexBySeat(i) }).every((p) => { return p != null });
-            if (allSeatsOccupied) {
+            var allSeatsOccupied = this.room.getTotalNumberSeated();
+            if (allSeatsOccupied >= 4) {
                 this.beginRound(false);
             }
             this.sendGameStateAll();
@@ -122,12 +122,14 @@ class CoiffeurGamerules {
     }
 
     // Must implement!
+    // TODO: Necessary? Used?
     onPlayerLeave(player) {
         player.unSeat();
         this.sendGameStateAll();
     }
 
     compilePlayerGamestate(player) {
+        
         this.compileSeating(player);
         var localGamestate = {};
         var boardSetup =
@@ -285,7 +287,7 @@ class CoiffeurGamerules {
 
     compileSeating(player) {
         var SeatOrderMechanism = getSeatOrderMechanism(this.gameState.status, player);
-        var playerSeats = createPlayerSeats();
+        var playerSeats = createEmptyPlayerSeats();
 
         // Fetch all players' names and store locally
         const allPlayers = this.room.getAllPlayers();

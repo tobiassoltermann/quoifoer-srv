@@ -101,6 +101,7 @@ class GameServer {
 }
 
 let gameServer = new GameServer()
+global.gameServer = gameServer;
 // makes dev's life easier
 
 server.listen(4000, '0.0.0.0', function(){

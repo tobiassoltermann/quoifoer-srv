@@ -23,6 +23,8 @@ function createTeamNames(player1, player2) {
     return shortenPlayername(player1) + "+" + shortenPlayername(player2);
 }
 
+// TODO: Review!
+
 function getSeatOrderMechanism(status, player) {
     switch (status) {
         case "PLAYER_SEATING":
@@ -41,7 +43,7 @@ function getCompassBySeat(seatID) {
     return AbsoluteSeatOrder()[seatID];
 }
 
-function createPlayerSeats() {
+function createEmptyPlayerSeats() {
     return {
         S: {
             playerName: null,
@@ -85,7 +87,7 @@ module.exports = {
     getTeamBySeat,
     shortenPlayername,
     createTeamNames,
-    createPlayerSeats,
+    createEmptyPlayerSeats,
     getSeatOrderMechanism,
     getCompassBySeat,
     AbsoluteSeatOrder,
