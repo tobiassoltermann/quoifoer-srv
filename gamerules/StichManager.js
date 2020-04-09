@@ -57,11 +57,12 @@ class StichManager {
 
         const currentPlayerCarddeck = cardDecks["player" + gameState.turnSeat];
         currentPlayerCarddeck.removeCard(card);
-        tcd[getCompassBySeat(gameState.turnSeat)].card = card;
+        tcd["player" + gameState.turnSeat] = card;
+
 
         const playedCards = Object
             .values(gameState.tableCardDeck)
-            .filter( (deckObj) => { return deckObj.card != null && deckObj.card.name != "NN" } )
+            .filter( (deckObj) => { return deckObj != null && deckObj.name != "NN" } )
             
         if (playedCards.length >= 4 ) {
             this.endStich(playedCards);
@@ -72,7 +73,7 @@ class StichManager {
         } else {
             var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
             gameState.turnSeat = nextPlayerSeat;
-            tcd[getCompassBySeat(gameState.turnSeat)].card = getNullCard();
+            tcd["player" + gameState.turnSeat] = getNullCard();
         }
     }
 

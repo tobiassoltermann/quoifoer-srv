@@ -1,7 +1,7 @@
 const Card = require('./Card');
 
 
-function getTeamBySeat (seat) {
+function getTeamBySeat(seat) {
     switch (seat) {
         case 0:
         case 2:
@@ -39,10 +39,6 @@ function getSeatOrderMechanism(status, player) {
     }
 }
 
-function getCompassBySeat(seatID) {
-    return AbsoluteSeatOrder()[seatID];
-}
-
 function createEmptyPlayerSeats() {
     return {
         S: {
@@ -60,21 +56,50 @@ function createEmptyPlayerSeats() {
     }
 }
 
-function AbsoluteSeatOrder() {
-    return ['S', 'E', 'N', 'W']
-};
-
-
 function arrayRotate(arr, count) {
     count -= arr.length * Math.floor(count / arr.length);
     arr.push.apply(arr, arr.splice(0, count));
     return arr;
 }
-function RelativeSeatOrder(player) {
-    var allSeats = AbsoluteSeatOrder();
-    var seatNo = player.getSeat();
-    arrayRotate(allSeats, -seatNo); // Reverse!
-    return allSeats;
+
+
+function AbsoluteSeatCompass() {
+    return ['S', 'E', 'N', 'W']
+}
+function AbsoluteSeatNumbers() {
+    return [0, 1, 2, 3];
+}
+
+function translateAbsToRel(absArr, seatNo, status) {
+    var relArr = absArr.slice();
+    switch (status) {
+        case "PLAYER_SEATING":
+            break; // Do nothing
+
+        default: // On purpose!
+            console.warn("status " + status + " not explicitely defined");
+        case "CHOOSE_TRICK":
+        case "PLAY_ROUND":
+            arrayRotate(relArr, seatNo)
+    }
+
+    return relArr;
+}
+
+function translateRelToAbs(relArr, player, status) {
+    var absArr = relArr.slice();
+    switch (status) {
+        case "PLAYER_SEATING":
+            break; // Do nothing
+
+        default: // On purpose!
+            console.warn("status " + status + " not explicitely defined");
+        case "CHOOSE_TRICK":
+        case "PLAY_ROUND":
+            arrayRotate(absArr, player.geatSeatNo())
+    }
+
+    return absArr;
 }
 
 function getNullCard() {
@@ -88,10 +113,14 @@ module.exports = {
     shortenPlayername,
     createTeamNames,
     createEmptyPlayerSeats,
-    getSeatOrderMechanism,
-    getCompassBySeat,
-    AbsoluteSeatOrder,
-    RelativeSeatOrder,
+
     getNullCard,
     arrayRotate,
+
+    AbsoluteSeatCompass,
+    AbsoluteSeatNumbers,
+    translateAbsToRel,
+    translateRelToAbs,
+        
+    
 }

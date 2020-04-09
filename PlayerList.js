@@ -81,7 +81,7 @@ class PlayerList {
     }
 
     getTotalNumberSeated() {
-        return this.players.filter( (player) => { return player.seat !== null } ).length;
+        return this.getAllSeatedPlayers().length;
     }
 
     getTotalNumberUnseated() {
@@ -90,6 +90,10 @@ class PlayerList {
 
     getAllPlayers() {
         return this.players;
+    }
+
+    getAllSeatedPlayers() {
+        return this.players.filter( (player) => { return player.seat !== null } );
     }
 }
 

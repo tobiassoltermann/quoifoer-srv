@@ -62,6 +62,10 @@ class Room {
     getAllPlayers() {
         return this.players.getAllPlayers();
     }
+
+    getAllSeatedPlayers() {
+        return this.players.getAllSeatedPlayers();
+    }
 }
 
 module.exports = Room;

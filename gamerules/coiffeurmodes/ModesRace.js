@@ -1,7 +1,7 @@
 const Mode = require('./Mode');
 const {
     arrayRotate,
-    AbsoluteSeatOrder,
+    AbsoluteSeatNumbers,
 } = require('../CoiffeurHelpers');
 
 class ModeRace extends Mode {
@@ -52,7 +52,7 @@ class ModeRace extends Mode {
                 const hasOtherPlayerPlayedHigherTrumpBefore = ((compareToCard) => {
                     var highestTrumpCardIndex = this.trumpfCards.findIndex( (trumpfCard) => {return trumpfCard == (this.race + compareToCard.level) });; // start with current players' card.
                     for(var i = 1; i < 4; i++) {
-                        const crtCardCheck = tableCardDeck[AbsoluteSeatOrder()[i]].card;
+                        const crtCardCheck = tableCardDeck["player" + i];
                         if (crtCardCheck != null && crtCardCheck.race == this.race) {
                             const crtCardIndex = this.trumpfCards.findIndex( (trumpfCard) => {return trumpfCard == (this.race + crtCardCheck.level) });
                             if (crtCardIndex == -1) {
@@ -134,15 +134,17 @@ class ModeRace extends Mode {
         var highestCard = onCard;
         var winningPlayerSeat = 0;
         for(var i = 1; i < 4; i++) {
-            const crtCardCheck = tableCardDeck[AbsoluteSeatOrder()[playedSeatorder[i]]].card;
+            const crtCardCheck = tableCardDeck["player" + playedSeatorder[i]];
+
+            //            const crtCardCheck = tableCardDeck[AbsoluteSeatOrder()[playedSeatorder[i]]].card;
             if (this.compareCards(orderedCardNames, crtCardCheck, highestCard ) > 0) {
                 highestCard = crtCardCheck;
                 winningPlayerSeat = playedSeatorder[i];
             }
         }
 
-        var stichValue = AbsoluteSeatOrder().map( (compass) => {
-            return this.calculateCardValue( tableCardDeck[compass].card );
+        var stichValue = AbsoluteSeatNumbers().map( (seatNumber) => {
+            return this.calculateCardValue( tableCardDeck["player" + seatNumber] );
         }).reduce( (acc, crt) => acc + crt ); 
 
         var team1Score = 0;
@@ -172,7 +174,7 @@ class ModeRace extends Mode {
     }
     getOnCard(tableCardDeck, firstPlayed) {
         const playedSeatorder = arrayRotate([0, 1, 2, 3], firstPlayed);
-        var onCard = tableCardDeck[AbsoluteSeatOrder()[playedSeatorder[0]]].card;
+        var onCard = tableCardDeck["player" + playedSeatorder[0]];
         return onCard;
     }
 

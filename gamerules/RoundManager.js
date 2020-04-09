@@ -1,8 +1,4 @@
 const {
-    getSeatOrderMechanism,
-    AbsoluteSeatOrder,
-    RelativeSeatOrder,
-    getCompassBySeat,
     getNullCard,
 } = require('./CoiffeurHelpers');
 
@@ -62,11 +58,11 @@ class RoundManager {
     updatePlayedCards() {
         const gameState = this.gR.gameState;
         const tcd = gameState.tableCardDeck;
-        tcd.S.card = null;
-        tcd.E.card = null;
-        tcd.N.card = null;
-        tcd.W.card = null;
-        tcd[getCompassBySeat(gameState.turnSeat)].card = getNullCard();
+        tcd.player0 = null;
+        tcd.player1 = null;
+        tcd.player2 = null;
+        tcd.player3 = null;
+        tcd["player" + gameState.turnSeat] = getNullCard();
     }
 
     playCard(card) {

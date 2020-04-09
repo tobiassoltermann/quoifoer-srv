@@ -6,7 +6,16 @@ const CoiffeurCardSet = require('./CoiffeurCardSet');
 const ClosedCardSet = require('./ClosedCardSet');
 const RoundManager = require('./RoundManager');
 const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
-const { getTeamBySeat, createTeamNames, shortenPlayername, getSeatOrderMechanism, createEmptyPlayerSeats, AbsoluteSeatOrder, RelativeSeatOrder } = require('./CoiffeurHelpers');
+const {
+    getTeamBySeat,
+    createTeamNames,
+    
+    translateAbsToRel,
+    translateRelToAbs,
+    AbsoluteSeatNumbers,
+    AbsoluteSeatCompass,
+
+ } = require('./CoiffeurHelpers');
 
 class CoiffeurGamerules {
     constructor(room) {
@@ -24,21 +33,18 @@ class CoiffeurGamerules {
                 player3: new CardSet(),
             },
             seatsAbsolute: {
-                
+                /* 
+                player0: Player,
+                player1: Player,
+                player2: Player,
+                player3: Player,
+                */
             },
             tableCardDeck: {
-                S: {
-                    card: this.cardSet.getSpecificCardByName("H6"),
-                },
-                E: {
-                    card: this.cardSet.getSpecificCardByName("S7"),
-                },
-                N: {
-                    card: this.cardSet.getSpecificCardByName("C8"),
-                },
-                W: {
-                    card: this.cardSet.getSpecificCardByName("K9"),
-                },
+                player0: this.cardSet.getSpecificCardByName("H6"),
+                player1: this.cardSet.getSpecificCardByName("S7"),
+                player2: this.cardSet.getSpecificCardByName("C8"),
+                player3: this.cardSet.getSpecificCardByName("K9"),
             }
         };
         this.roundManager = new RoundManager(this);
@@ -52,7 +58,7 @@ class CoiffeurGamerules {
         })
 
         player.client.on('coiffeur-seat', (compass, response) => {
-            var seatNo = AbsoluteSeatOrder().findIndex((crt) => { return compass == crt }); // XLATE: compassToSeatNo()
+            var seatNo = AbsoluteSeatCompass().findIndex((crt) => { return compass == crt }); // XLATE: compassToSeatNo()
             if (seatNo == -1) {
                 response({
                     status: false,
@@ -75,15 +81,15 @@ class CoiffeurGamerules {
                 return;
             }
             var allSeatsOccupied = this.room.getTotalNumberSeated();
-            if (allSeatsOccupied >= 4) {
+            if (allSeatsOccupied >= this.maxPlayers()) {
                 this.beginRound(false);
             }
+            this.updateSeating();
             this.sendGameStateAll();
         });
 
         player.client.on('coiffeur-unseat', (response) => {
-            player.unSeat();
-            this.sendGameStateAll();
+            this.onPlayerLeave(player);
         });
 
         player.client.on('coiffeur-selectpush', () => {
@@ -125,36 +131,29 @@ class CoiffeurGamerules {
     // TODO: Necessary? Used?
     onPlayerLeave(player) {
         player.unSeat();
+        this.updateSeating();
         this.sendGameStateAll();
     }
 
     compilePlayerGamestate(player) {
-        
-        this.compileSeating(player);
+        const gameState = this.gameState;
         var localGamestate = {};
-        var boardSetup =
-            Object.assign({},
-                this.gameState.seatsAbsolute,
-            );
-
-        const absSO = AbsoluteSeatOrder();
-        //const relSO = RelativeSeatOrder(player);
-        const relSO = getSeatOrderMechanism(this.gameState.status, player);
-        for (var i = 0; i < 4; i++) {
-            const thisCard = this.gameState.tableCardDeck[absSO[i]].card;
-            if (thisCard != null) {
-                boardSetup[relSO[i]].card = thisCard.renderName();
-            } else {
-                boardSetup[relSO[i]].card = null;
-            }
-        }
-
-        boardSetup.self = AbsoluteSeatOrder()[player.getSeat()];
-
+        localGamestate.mySeat = player.getSeat();
+        //this.compileSeating(player);
+        var localPlayerNames = this.localizePlayernames(player);
+        var localTableCards = this.localizeCards(player);
 
         var scores = this.scoresObject.render();
-        scores.team1Name = createTeamNames(boardSetup.N.playerName, boardSetup.S.playerName);
-        scores.team2Name = createTeamNames(boardSetup.W.playerName, boardSetup.E.playerName);
+        
+        function getSeatName(seatNo) {
+            const playerObj = gameState.seatsAbsolute["player" + seatNo];
+            if (playerObj != null) {
+                return playerObj.getName();
+            }
+            return null;
+        }
+        scores.team1Name = createTeamNames(getSeatName(0), getSeatName(2));
+        scores.team2Name = createTeamNames(getSeatName(1), getSeatName(3));
 
         var overallUIState;
         if (this.gameState.status == "PLAYER_SEATING") {
@@ -269,7 +268,8 @@ class CoiffeurGamerules {
                         ? playerCardDeck.render()
                         : []
                 ,
-                boardSetup,
+                localPlayerNames,
+                localTableCards,
             }
         );
 
@@ -277,15 +277,79 @@ class CoiffeurGamerules {
     }
 
     sendGameStateAll() {
+        console.log("sendGameStateAll()");
         this.room.getAllPlayers().forEach((player) => {
             var [localGamestate, overallUIState] = this.compilePlayerGamestate(player);
-//            console.log("sendGameStateAll", "localGamestate", localGamestate, overallUIState);
+
             player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
             player.client.emit('debugInfo', localGamestate, overallUIState);
         })
     }
 
-    compileSeating(player) {
+    updateSeating() {
+        var playerSeats = {};
+        playerSeats["player0"] = this.room.getPlayerBySeat(0);
+        playerSeats["player1"] = this.room.getPlayerBySeat(1);
+        playerSeats["player2"] = this.room.getPlayerBySeat(2);
+        playerSeats["player3"] = this.room.getPlayerBySeat(3);
+
+        this.gameState.seatsAbsolute = playerSeats;
+    }
+
+    localizePlayernames(player) {
+        const absSO = AbsoluteSeatNumbers();
+        const absCO = AbsoluteSeatCompass();
+        // [0, 1, 2, 3];
+        const relSO = translateAbsToRel(absSO, player.getSeat(), this.gameState.status);
+        // [1, 2, 3, 0] for player1
+        var playerNames = {}
+        for (var i = 0; i < 4; i++) {
+            if (this.gameState.seatsAbsolute["player"+relSO[i]] != null) {
+                playerNames[ absCO[i] ] = this.gameState.seatsAbsolute["player"+relSO[i]].getName()
+            }
+        }
+
+        return playerNames;
+    }
+    localizeCards(player) {
+        const absSO = AbsoluteSeatNumbers();
+        const absCO = AbsoluteSeatCompass();
+        // [0, 1, 2, 3];
+        const relSO = translateAbsToRel(absSO, player.getSeat(), this.gameState.status);
+        // [1, 2, 3, 0] for player1
+        var cards = {}
+        for (var i = 0; i < 4; i++) {
+            if (this.gameState.tableCardDeck["player"+relSO[i]] != null) {
+                var crtCard = this.gameState.tableCardDeck["player"+relSO[i]];
+                cards[ absCO[i] ] = 
+                    crtCard != null
+                    ? crtCard.renderName()
+                    : null
+                ;
+            }
+        }
+
+        return cards;
+    }
+
+    localizeSeating(player) {
+        var allSeats = AbsoluteSeatOrder();
+        switch (this.gameState.status) {
+            case "PLAYER_SEATING":
+                break
+            case "CHOOSE_TRICK":
+
+            default: // On purpose!
+                    console.warn("status " + status + " not explicitely defined");
+            case "PLAY_ROUND":
+                localize = true;
+                var seatNo = player.getSeat();
+                arrayRotate(allSeats, -seatNo); // Reverse!
+        }
+        return allSeats;
+    }
+
+    /*compileSeating(player) {
         var SeatOrderMechanism = getSeatOrderMechanism(this.gameState.status, player);
         var playerSeats = createEmptyPlayerSeats();
 
@@ -302,17 +366,19 @@ class CoiffeurGamerules {
 
         this.gameState.seatsAbsolute = playerSeats;
         return
-    }
+    }*/
 
     sendGameState(player) {
         player.client.emit('coiffeur-gamestate', this.gameState);
     }
 
+    /*
+    UNUSED?
     emitAllPlayers(event, ...args) {
         this.room.getAllPlayers().forEach((player) => {
             player.emit(event, ...args);
         })
-    }
+    }*/
     distributeCards() {
         const shuffledCards = this.cardSet.shuffle();
         this.gameState.playerCardDecks = {
