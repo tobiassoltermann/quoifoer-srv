@@ -72,12 +72,15 @@ class CoiffeurScores {
 
     updateTotals() {
         this.scores.totalTeam1 = 
-            this.scores.scoreLines.reduce( (acc, currentValue) => {
-                return acc + currentValue.scoreTeam1;
+            this.scores.scoreLines.reduce( (acc, currentValue, index) => {
+                var multiplier = index + 1;
+                return acc + (currentValue.scoreTeam1 * multiplier);
             }, 0);
         this.scores.totalTeam2 = 
-            this.scores.scoreLines.reduce( (acc, currentValue) => {
-                return acc + currentValue.scoreTeam2;
+            this.scores.scoreLines.reduce( (acc, currentValue, index) => {
+                var multiplier = index + 1;
+
+                return acc + (currentValue.scoreTeam2 * multiplier);
             }, 0);
     }
 

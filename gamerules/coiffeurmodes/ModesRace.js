@@ -56,8 +56,7 @@ class ModeRace extends Mode {
                         if (crtCardCheck != null && crtCardCheck.race == this.race) {
                             const crtCardIndex = this.trumpfCards.findIndex( (trumpfCard) => {return trumpfCard == (this.race + crtCardCheck.level) });
                             if (crtCardIndex == -1) {
-                                debugger;
-                                console.warn("Shouldn't happen");
+                                console.warn("Shouldn't happen. ModesRace::checkCanPlayCard. Cannot find whether other cards have been higher", this.trumpfCards);
                             }
                             if (crtCardIndex < highestTrumpCardIndex) {
                                 return true;
@@ -128,15 +127,15 @@ class ModeRace extends Mode {
         const playedSeatorder = this.calculateSeatOrder(firstPlayed);
         var onCard = this.getOnCard(tableCardDeck, firstPlayed);
         var onCards = this.createRaceCardlist(onCard.race);
-
+        var winningTeam;
         var orderedCardNames = this.createRemainingRaceCardlist(onCards, onCard.race);
 
         var highestCard = onCard;
-        var winningPlayerSeat = 0;
+        var winningPlayerSeat = playedSeatorder[0]; // start with first card played
         for(var i = 1; i < 4; i++) {
             const crtCardCheck = tableCardDeck["player" + playedSeatorder[i]];
 
-            //            const crtCardCheck = tableCardDeck[AbsoluteSeatOrder()[playedSeatorder[i]]].card;
+            // check if card is higher?
             if (this.compareCards(orderedCardNames, crtCardCheck, highestCard ) > 0) {
                 highestCard = crtCardCheck;
                 winningPlayerSeat = playedSeatorder[i];
@@ -152,18 +151,21 @@ class ModeRace extends Mode {
         switch (winningPlayerSeat) {
             case 0:
             case 2:
+                winningTeam = 1;
                 team1Score = stichValue;
                 team2Score = 0;
             break;
             case 1:
             case 3:
+                winningTeam = 2;
                 team1Score = 0;
                 team2Score = stichValue;
         }
-
+        // TODO: winningPlayerSeat is WRONG!
         console.log("checkWinner", tableCardDeck, firstPlayed, winningPlayerSeat, highestCard);
         return {
             winningPlayerSeat,
+            winningTeam,
             team1Score,
             team2Score,
         }

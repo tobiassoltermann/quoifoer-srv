@@ -81,11 +81,12 @@ class CoiffeurGamerules {
                 return;
             }
             var allSeatsOccupied = this.room.getTotalNumberSeated();
-            if (allSeatsOccupied >= this.maxPlayers()) {
-                this.beginRound(false);
-            }
             this.updateSeating();
-            this.sendGameStateAll();
+            if (allSeatsOccupied >= this.maxPlayers()) {
+                this.roundManager.beginRound();
+            } else {
+                this.sendGameStateAll();
+            }
         });
 
         player.client.on('coiffeur-unseat', (response) => {
@@ -94,22 +95,22 @@ class CoiffeurGamerules {
 
         player.client.on('coiffeur-selectpush', () => {
             this.roundManager.pushSelected();
-            this.sendGameStateAll();
         });
 
         player.client.on('coiffeur-selecttrick', (multiplier) => {
             this.roundManager.trickSelected(multiplier);
-            this.sendGameStateAll();
         });
 
-        player.client.on('coiffeur-playcard', (cardName, response) => {
-            console.log("coiffeur-playcard", cardName);
+        player.client.on('coiffeur-playcard', (cardName, allCardsUnlocked, response) => {
+            console.log("coiffeur-playcard", cardName, allCardsUnlocked);
+            if (allCardsUnlocked) {
+                console.debug("player", player, "has played card ", cardName, "with all cards unlocked. gameState:", this.gameState);
+            }
             const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
             const card = playerCardDeck.getSpecificCardByName(cardName);
 
             if (card != undefined) {
                 this.roundManager.playCard(card);
-                this.sendGameStateAll();
             } else {
                 response({
                     status: false,
@@ -117,14 +118,6 @@ class CoiffeurGamerules {
                 });
             }
         });
-    }
-
-    beginRound(updateClients) {
-        this.roundManager.beginRound();
-
-        if (updateClients) {
-            this.sendGameStateAll();
-        }
     }
 
     // Must implement!
@@ -140,8 +133,7 @@ class CoiffeurGamerules {
         var localGamestate = {};
         localGamestate.mySeat = player.getSeat();
         //this.compileSeating(player);
-        var localPlayerNames = this.localizePlayernames(player);
-        var localTableCards = this.localizeCards(player);
+
 
         var scores = this.scoresObject.render();
         
@@ -192,7 +184,8 @@ class CoiffeurGamerules {
                 )
             })
         }
-
+        const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
+        
         if (this.gameState.status == "CHOOSE_TRICK") {
             console.log("this.gameState", player.getSeat(), this.gameState);
 
@@ -200,6 +193,9 @@ class CoiffeurGamerules {
             localGamestate.myTurn = player.getSeat() == this.gameState.turnSeat;
             localGamestate.canPush = this.gameState.roundPlayerCanPush && localGamestate.myTurn;
             var canPushWords = localGamestate.canPush ? ", or push." : ".";
+            playerCardDeck.cards.forEach( (card, index) => {
+                playerCardDeck.cards[index].playable = false;
+            });
             if (localGamestate.myTurn) {
                 overallUIState = {
                     statusText: {
@@ -222,7 +218,7 @@ class CoiffeurGamerules {
             }
         };
         // IF getSeat is null, what happens?
-        const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
+
         if (this.gameState.status == "PLAY_ROUND") {
             localGamestate.myTurn = player.getSeat() == this.gameState.turnSeat;
             localGamestate.canPush = false;
@@ -240,6 +236,7 @@ class CoiffeurGamerules {
                     },
                 }
             } else {
+                // TODO: Get name by player seats
                 const playersTurn = this.room.getPlayerBySeat(this.gameState.turnSeat);
                 const playersName = playersTurn.getName();
 
@@ -256,7 +253,26 @@ class CoiffeurGamerules {
             }
         }
 
-        
+        if (this.gameState.status == "AWAIT_ENDROUND") {
+            // TODO: Get name by player seats
+
+            const winningPlayername = this.room.getPlayerBySeat(this.gameState.winningPlayerSeat).getName();
+
+            playerCardDeck.cards.forEach( (card, index) => {
+                playerCardDeck.cards[index].playable = false;
+            });
+            overallUIState = {
+                statusText: {
+                    label: "Player " + winningPlayername + " takes the cards.",
+                    icon: this.gameModeImplementation.getIcon(),
+                    visible: true,
+                },
+            }
+        }
+
+        var localPlayerNames = this.localizePlayernames(player);
+        var localTableCards = this.localizeCards(player, "main");
+        var lastStich = this.localizeCards(player, "last");
         localGamestate = Object.assign(
             localGamestate,
             {
@@ -270,6 +286,7 @@ class CoiffeurGamerules {
                 ,
                 localPlayerNames,
                 localTableCards,
+                lastStich,
             }
         );
 
@@ -280,9 +297,10 @@ class CoiffeurGamerules {
         console.log("sendGameStateAll()");
         this.room.getAllPlayers().forEach((player) => {
             var [localGamestate, overallUIState] = this.compilePlayerGamestate(player);
-
-            player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
-            player.client.emit('debugInfo', localGamestate, overallUIState);
+            if (player.client != null) {
+                player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
+                player.client.emit('debugInfo', localGamestate, overallUIState);
+            };
         })
     }
 
@@ -311,7 +329,20 @@ class CoiffeurGamerules {
 
         return playerNames;
     }
-    localizeCards(player) {
+    localizeCards(player, boardType) {
+        var tCD, winningPlayerSeat;
+        if (boardType == "main" || boardType == null) {
+            tCD = this.gameState.tableCardDeck;
+            winningPlayerSeat = this.gameState.winningPlayerSeat;
+        };
+        if (boardType == "last" || boardType == null) {
+            if (this.gameState.lastStich == null) {
+                return null;
+            }
+            tCD = this.gameState.lastStich;
+            winningPlayerSeat = tCD.winningPlayerSeat;
+        };
+
         const absSO = AbsoluteSeatNumbers();
         const absCO = AbsoluteSeatCompass();
         // [0, 1, 2, 3];
@@ -319,29 +350,36 @@ class CoiffeurGamerules {
         // [1, 2, 3, 0] for player1
         var cards = {}
         for (var i = 0; i < 4; i++) {
-            if (this.gameState.tableCardDeck["player"+relSO[i]] != null) {
-                var crtCard = this.gameState.tableCardDeck["player"+relSO[i]];
+            if (tCD["player"+relSO[i]] != null) {
+                var crtCard = tCD["player"+relSO[i]];
                 cards[ absCO[i] ] = 
-                    crtCard != null
+                crtCard != null
                     ? crtCard.renderName()
                     : null
-                ;
+                    ;
             }
         }
+        
+        const relCO = translateRelToAbs(absCO, player.getSeat(), this.gameState.status);
+
+        cards.winner = relCO[winningPlayerSeat];
 
         return cards;
     }
+
+    
 
     localizeSeating(player) {
         var allSeats = AbsoluteSeatOrder();
         switch (this.gameState.status) {
             case "PLAYER_SEATING":
                 break
+                
+                default: // On purpose!
+                console.warn("status " + status + " not explicitely defined");
             case "CHOOSE_TRICK":
-
-            default: // On purpose!
-                    console.warn("status " + status + " not explicitely defined");
             case "PLAY_ROUND":
+            case "AWAIT_ENDROUND":
                 localize = true;
                 var seatNo = player.getSeat();
                 arrayRotate(allSeats, -seatNo); // Reverse!

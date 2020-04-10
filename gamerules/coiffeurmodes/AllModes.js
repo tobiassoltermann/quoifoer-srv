@@ -6,6 +6,10 @@ const {
     ModeDiamonds,
 } = require('./ModesRace');
 
+const {
+    ModeUp,
+    ModeDown,
+} = require('./ModesDirectional');
 
 module.exports = {
     Mode3x3,
@@ -13,4 +17,7 @@ module.exports = {
     ModeClubs,
     ModeSpades,
     ModeDiamonds,
+    ModeUp,
+    ModeDown,
+    
 }

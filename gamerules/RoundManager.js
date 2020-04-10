@@ -13,6 +13,8 @@ class RoundManager {
     }
     
     beginRound() {
+        console.log("Begin round");
+
         this.stichMgr = new StichManager(this.gR);
         const gameState = this.gR.gameState;
         this.roundIndex++;
@@ -25,10 +27,14 @@ class RoundManager {
         this.startingSeat = (gameState.firstEverPlayerSeat + this.roundIndex) % this.gR.room.maxPlayers();
         gameState.turnSeat = this.startingSeat;
         gameState.roundPlayerCanPush = true;
+        gameState.lastStich = null;
+        gameState.winningPlayerSeat = null;
 
-        this.updatePlayedCards();
+        this.stichMgr.updatePlayedCards();
 
         console.log("Selecting player seat is:", gameState.turnSeat);
+
+        this.gR.sendGameStateAll();
     }
 
     pushSelected() {
@@ -41,11 +47,12 @@ class RoundManager {
             gameState.roundPlayerCanPush = false;
         }
 
-        this.updatePlayedCards();
+        this.stichMgr.updatePlayedCards();
+        this.gR.sendGameStateAll();
     }
     trickSelected(multiplier) {
-        const gameState = this.gR.gameState;
         console.log("RoundManager.trickSelected", multiplier);
+        const gameState = this.gR.gameState;
         this.gR.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
         gameState.roundPlayerCanPush = false;
         gameState.status = "PLAY_ROUND";
@@ -53,34 +60,35 @@ class RoundManager {
         gameState.trickStarter = gameState.turnSeat;
         this.roundMultiplier = multiplier;
         this.stichMgr.beginStich();
+        this.gR.sendGameStateAll();
     }
 
-    updatePlayedCards() {
-        const gameState = this.gR.gameState;
-        const tcd = gameState.tableCardDeck;
-        tcd.player0 = null;
-        tcd.player1 = null;
-        tcd.player2 = null;
-        tcd.player3 = null;
-        tcd["player" + gameState.turnSeat] = getNullCard();
-    }
+
 
     playCard(card) {
         this.stichMgr.playCard(card);
         if (this.stichMgr.isEndRound()) {
             this.endRound();
         }
+        this.gR.sendGameStateAll();
     }
 
     endRound() {
         console.log("End round");
 
-        const { team1Scores, team2Scores} = this.stichMgr.calculateScores();
+        const { team1Score, team2Score} = this.stichMgr.calculateScores();
 
-        this.gR.scoresObject.updateScore(multiplier, {
-            scoreTeam1: team1Scores,
-            scoreTeam2: team2Scores,
+        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, {
+            scoreTeam1: team1Score,
+            scoreTeam2: team2Score,
         });
+
+        this.gR.sendGameStateAll();
+        if (this.roundIndex < this.roundMax - 1) {
+            setTimeout( (() => {
+                this.beginRound();
+            }).bind(this), 5000);
+        }
     }
 
     checkCanPlayCard(player, card) {

@@ -7,6 +7,8 @@ const {
     ModeClubs,
     ModeSpades,
     ModeDiamonds,
+    ModeUp,
+    ModeDown,
 } = require('./coiffeurmodes/AllModes');
 
 class SuperSachCoiffeurModelist extends ModeList {
@@ -18,8 +20,8 @@ class SuperSachCoiffeurModelist extends ModeList {
             new ModeHearts(2),
             new ModeSpades(3),
             new ModeDiamonds(4),
-            new Mode("DOWN", 5, "trumpD"),
-            new Mode("UP", 6, "trumpU"),
+            new ModeDown(5),
+            new ModeUp(6),
             new Mode("SLALOM", 7, "trumpA"),
             new Mode("TANNENBAUM", 8, "trumpT"),
             //new Mode("3x3", 9, "trump3"),

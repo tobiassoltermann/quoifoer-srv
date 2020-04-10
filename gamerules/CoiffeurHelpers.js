@@ -23,22 +23,6 @@ function createTeamNames(player1, player2) {
     return shortenPlayername(player1) + "+" + shortenPlayername(player2);
 }
 
-// TODO: Review!
-
-function getSeatOrderMechanism(status, player) {
-    switch (status) {
-        case "PLAYER_SEATING":
-            return AbsoluteSeatOrder();
-        case "CHOOSE_TRICK":
-        case "PLAY_ROUND":
-            return RelativeSeatOrder(player);
-
-        default:
-            console.warn("status " + status + " not explicitely defined");
-            return RelativeSeatOrder(player);
-    }
-}
-
 function createEmptyPlayerSeats() {
     return {
         S: {
@@ -79,6 +63,7 @@ function translateAbsToRel(absArr, seatNo, status) {
         default: // On purpose!
             console.warn("status " + status + " not explicitely defined");
         case "CHOOSE_TRICK":
+        case "AWAIT_ENDROUND":
         case "PLAY_ROUND":
             arrayRotate(relArr, seatNo)
     }
@@ -86,7 +71,7 @@ function translateAbsToRel(absArr, seatNo, status) {
     return relArr;
 }
 
-function translateRelToAbs(relArr, player, status) {
+function translateRelToAbs(relArr, seatNo, status) {
     var absArr = relArr.slice();
     switch (status) {
         case "PLAYER_SEATING":
@@ -95,8 +80,9 @@ function translateRelToAbs(relArr, player, status) {
         default: // On purpose!
             console.warn("status " + status + " not explicitely defined");
         case "CHOOSE_TRICK":
+        case "AWAIT_ENDROUND":
         case "PLAY_ROUND":
-            arrayRotate(absArr, player.geatSeatNo())
+            arrayRotate(absArr, -seatNo)
     }
 
     return absArr;

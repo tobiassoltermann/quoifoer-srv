@@ -24,7 +24,7 @@ class ModeList {
     }
 
     length() { 
-        return this.modes.length;
+        return Object.keys(this.modes).length;
     }
 }
 
