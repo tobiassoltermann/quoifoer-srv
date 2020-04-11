@@ -1,64 +1,24 @@
 class CoiffeurScores {
-    constructor() {
+    constructor(modes) {
+        this.modes = modes;
         this.scores = {
-            scoreLines: [
-                {
-                    icon: 'trumpC',
+            scoreLines: this.modes.allModes().map( (crtMode) => {
+                var crtScoreline = {
+                    icon: crtMode.getIcon(),
                     scoreTeam1: null,
                     scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpH',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpS',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpK',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpD',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpU',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpA',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpT',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trump3',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-                {
-                    icon: 'trumpJ',
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                },
-            ],
+                }
+                if (crtMode.hasSubselector()) {
+                    crtScoreline.subselectorName = crtMode.getSubselectorName();
+                }
+                return crtScoreline;
+            }),
             totalTeam1: 0,
             totalTeam2: 0,
             team1Name: 'Team 1',
             team2Name: 'Team 2',
             mode: "Coiffeur",
-        };
+        }
     }
 
     updateScore(index, scoreObject) {

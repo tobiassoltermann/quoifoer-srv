@@ -11,6 +11,19 @@ const {
     ModeDown,
 } = require('./ModesDirectional');
 
+const {
+    ModeSlalom,
+
+} = require('./ModeSlalom');
+
+const {
+    ModeTannenbaum,
+} = require('./ModeTannenbaum');
+
+const {
+    ModeJoker,
+} = require('./ModeJoker');
+
 module.exports = {
     Mode3x3,
     ModeHearts,
@@ -19,5 +32,7 @@ module.exports = {
     ModeDiamonds,
     ModeUp,
     ModeDown,
-    
+    ModeSlalom,
+    ModeTannenbaum,
+    ModeJoker,
 }

@@ -11,7 +11,16 @@ class Mode {
     getIcon() { return this.icon; }
     getName() { return this.name; }
 
-    checkCanPlayCard(player, card) { return false; }
+    checkCanPlayCard(playerCardDeck, tableCardDeck, card, firstPlayed) { return false; }
+    hasSubselector() {
+        return false;
+    }
+    getSubselectorName() {
+        return null;
+    }
+    setSubselection(subselection) {
+        return;
+    }
 }
 
 module.exports = Mode;

@@ -1,5 +1,6 @@
 const {
     getNullCard,
+    getTeamBySeat,
 } = require('./CoiffeurHelpers');
 
 const StichManager = require('./StichManager');
@@ -15,7 +16,6 @@ class RoundManager {
     beginRound() {
         console.log("Begin round");
 
-        this.stichMgr = new StichManager(this.gR);
         const gameState = this.gR.gameState;
         this.roundIndex++;
         gameState.status = "CHOOSE_TRICK";
@@ -25,6 +25,7 @@ class RoundManager {
             gameState.firstEverPlayerSeat = seatIndex;
         }
         this.startingSeat = (gameState.firstEverPlayerSeat + this.roundIndex) % this.gR.room.maxPlayers();
+        this.stichMgr = new StichManager(this.gR);
         gameState.turnSeat = this.startingSeat;
         gameState.roundPlayerCanPush = true;
         gameState.lastStich = null;
@@ -50,10 +51,11 @@ class RoundManager {
         this.stichMgr.updatePlayedCards();
         this.gR.sendGameStateAll();
     }
-    trickSelected(multiplier) {
-        console.log("RoundManager.trickSelected", multiplier);
+    trickSelected(multiplier, subselection) {
+        console.log("RoundManager.trickSelected", multiplier, subselection);
         const gameState = this.gR.gameState;
         this.gR.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
+        this.gR.gameModeImplementation.setSubselection(subselection);
         gameState.roundPlayerCanPush = false;
         gameState.status = "PLAY_ROUND";
 
@@ -76,12 +78,15 @@ class RoundManager {
     endRound() {
         console.log("End round");
 
-        const { team1Score, team2Score} = this.stichMgr.calculateScores();
+        const calculatedScores = this.stichMgr.calculateScores();
+        const startingTeam = getTeamBySeat(this.startingSeat);
+        var scoresObject={
+            scoreTeam1: null,
+            scoreTeam2: null,
 
-        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, {
-            scoreTeam1: team1Score,
-            scoreTeam2: team2Score,
-        });
+        };
+        scoresObject["scoreTeam" + startingTeam] = calculatedScores["team" + startingTeam + "Score"];
+        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, scoresObject);
 
         this.gR.sendGameStateAll();
         if (this.roundIndex < this.roundMax - 1) {

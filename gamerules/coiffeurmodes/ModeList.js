@@ -26,6 +26,10 @@ class ModeList {
     length() { 
         return Object.keys(this.modes).length;
     }
+
+    allModes() {
+        return Object.values(this.modes);
+    }
 }
 
 module.exports = ModeList;

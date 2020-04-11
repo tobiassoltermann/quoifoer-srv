@@ -20,7 +20,7 @@ const {
 class CoiffeurGamerules {
     constructor(room) {
         this.modes = new SuperSachCoiffeurModeList();
-        this.scoresObject = new CoiffeurScores();
+        this.scoresObject = new CoiffeurScores(this.modes);
         this.cardSet = new CoiffeurCardSet();
         this.room = room;
         
@@ -97,8 +97,8 @@ class CoiffeurGamerules {
             this.roundManager.pushSelected();
         });
 
-        player.client.on('coiffeur-selecttrick', (multiplier) => {
-            this.roundManager.trickSelected(multiplier);
+        player.client.on('coiffeur-selecttrick', (multiplier, subselection) => {
+            this.roundManager.trickSelected(multiplier, subselection);
         });
 
         player.client.on('coiffeur-playcard', (cardName, allCardsUnlocked, response) => {

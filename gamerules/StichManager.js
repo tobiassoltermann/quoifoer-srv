@@ -15,6 +15,7 @@ class StichManager {
             team1: [],
             team2: []
         }
+
     }
 
     beginStich() {
@@ -144,6 +145,7 @@ class StichManager {
             default:
                 console.warn("Should not happen. StichManager.calculateScores(), winningPlayerSeat has different value:", this.crtStich.winningPlayerSeat);
         }
+
         return {
             team1Score,
             team2Score

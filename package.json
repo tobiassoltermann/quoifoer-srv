@@ -13,6 +13,7 @@
   },
   "scripts": {
     "debug": "nodemon --debug index.js",
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "buildDocker": "docker build -t tobiassoltermann/jass-games-fe:latest ."
   }
 }

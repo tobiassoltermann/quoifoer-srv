@@ -1,3 +1,5 @@
+const SERVER_VERSION = 1.3;
+
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -43,6 +45,9 @@ class GameServer {
         this.sendOfferedGameRules(client);
 
         var playerName;
+        client.emit('serverinfo', {
+            SERVER_VERSION: SERVER_VERSION
+        });
         client.on("providename", (name) => {
             playerName = name;
             
