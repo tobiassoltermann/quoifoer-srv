@@ -1,4 +1,4 @@
-const SERVER_VERSION = 1.3;
+const SERVER_VERSION = 1.4;
 
 const express = require("express");
 const http = require("http");

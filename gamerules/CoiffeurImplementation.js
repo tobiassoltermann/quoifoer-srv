@@ -91,6 +91,7 @@ class CoiffeurGamerules {
 
         player.client.on('coiffeur-unseat', (response) => {
             this.onPlayerLeave(player);
+            
         });
 
         player.client.on('coiffeur-selectpush', () => {

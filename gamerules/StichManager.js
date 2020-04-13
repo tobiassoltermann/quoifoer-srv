@@ -125,14 +125,6 @@ class StichManager {
             team1Score += stich.team1Score;
             team2Score += stich.team2Score;
         });
-
-        // Match bonus +100pts
-        if (team1Score == 157) {
-            team1Score += 100;
-        }
-        if (team2Score == 157) {
-            team2Score += 100;
-        }
         switch (this.crtStich.winningPlayerSeat) {
             case 0:
             case 2:
@@ -144,6 +136,14 @@ class StichManager {
                 break;
             default:
                 console.warn("Should not happen. StichManager.calculateScores(), winningPlayerSeat has different value:", this.crtStich.winningPlayerSeat);
+        }
+
+        // Match bonus +100pts
+        if (team1Score == 157) {
+            team1Score += 100;
+        }
+        if (team2Score == 157) {
+            team2Score += 100;
         }
 
         return {

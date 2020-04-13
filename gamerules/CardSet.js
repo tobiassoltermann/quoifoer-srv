@@ -17,6 +17,7 @@ function shuffleFisherYates(array) {
     return array;
 }
 
+
 function sortByRaceLevel(array) {
     const HIGH_ORDERS = [ 'H', 'S', 'C', 'K' ];
     const LOW_ORDERS = [ '6', '7', '8', '9', 'X', 'J', 'Q', 'K', 'A'];

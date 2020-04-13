@@ -117,19 +117,7 @@ class ModeTannenbaum extends ModesDirectional {
     calculateCardValue(card) {
         switch (card.level) {
             case "A":
-                switch (this.direction) {
-                    case "U":
-                        return 0;
-                    case "D":
-                        return 11;
-                }
-            case "6":
-                switch (this.direction) {
-                    case "U":
-                        return 11;
-                    case "D":
-                        return 0;
-                }
+                return 11;
             case "K":
                 return 4;
             case "Q":

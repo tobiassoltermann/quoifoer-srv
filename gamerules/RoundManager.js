@@ -77,9 +77,11 @@ class RoundManager {
 
     endRound() {
         console.log("End round");
+        const gameState = this.gR.gameState;
+
 
         const calculatedScores = this.stichMgr.calculateScores();
-        const startingTeam = getTeamBySeat(this.startingSeat);
+        const startingTeam = getTeamBySeat(gameState.trickStarter);
         var scoresObject={
             scoreTeam1: null,
             scoreTeam2: null,

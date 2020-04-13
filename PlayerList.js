@@ -25,6 +25,10 @@ class PlayerList {
             if (existingPlayer.getSeat() != null && existingPlayer.client == null) {
                 // Player exists and socket is stale. Reassign socket.
                 existingPlayer.client = client;
+                client.on('disconnect', () => {
+                    // When detecting a disconnect, remove socket
+                    existingPlayer.client = null;
+                });
                 return {
                     status: true,
                     player: existingPlayer

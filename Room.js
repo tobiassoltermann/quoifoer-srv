@@ -45,9 +45,9 @@ class Room {
 
     leave(playerName) {
         var existingPlayer = this.players.getPlayerByName(playerName);
-        this.gameRuleEngine.onPlayerLeave(existingPlayer);
         var status = this.players.removePlayerByName(playerName);
         status.remainingPlayerNo = this.players.getTotalNumber();
+        this.gameRuleEngine.onPlayerLeave(existingPlayer);
         return status;
     }
 
