@@ -1,4 +1,4 @@
-const SERVER_VERSION = 1.4;
+const SERVER_VERSION = 1.5;
 
 const express = require("express");
 const http = require("http");
@@ -115,6 +115,6 @@ server.listen(4000, '0.0.0.0', function(){
         name: "room",
         protection: "none",
         password: '',
-        gameMode: 'coiffeur',
+        gameMode: 'schieber',
     });
 });

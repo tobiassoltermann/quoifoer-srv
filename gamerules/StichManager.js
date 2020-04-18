@@ -1,7 +1,7 @@
 const {
     getCompassBySeat,
     getNullCard,
-} = require('./CoiffeurHelpers');
+} = require('./JassHelpers');
 
 
 

@@ -1,7 +1,7 @@
 const Card = require('./Card');
 const CardSet = require('./CardSet');
 
-class CoiffeurCardSet extends CardSet {
+class JassCardSet extends CardSet {
     constructor() {
         super();
         this.addAllCards(
@@ -50,4 +50,4 @@ class CoiffeurCardSet extends CardSet {
     }
 }
 
-module.exports = CoiffeurCardSet;
+module.exports = JassCardSet;

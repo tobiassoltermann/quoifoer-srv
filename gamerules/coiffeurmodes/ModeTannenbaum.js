@@ -2,7 +2,7 @@ const Mode = require('./Mode');
 const {
     arrayRotate,
     AbsoluteSeatNumbers,
-} = require('../CoiffeurHelpers');
+} = require('../JassHelpers');
 
 const {
     ModesDirectional,

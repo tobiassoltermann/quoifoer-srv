@@ -2,7 +2,7 @@ const Mode = require('./Mode');
 const {
     arrayRotate,
     AbsoluteSeatNumbers,
-} = require('../CoiffeurHelpers');
+} = require('../JassHelpers');
 
 class ModeRace extends Mode {
     constructor(name, multiplier, icon, race) {

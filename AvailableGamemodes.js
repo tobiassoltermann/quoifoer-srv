@@ -1,5 +1,5 @@
 const CoiffeurImplementation = require('./gamerules/CoiffeurImplementation');
-
+const SchieberImplementation = require('./gamerules/SchieberImplementation');
 AvailableGamemodes = {
     coiffeur: {
         label: 'Coiffeur',
@@ -7,7 +7,7 @@ AvailableGamemodes = {
     },
     schieber: {
         label: 'Schieber',
-        implementation: null,
+        implementation: SchieberImplementation,
     }
 };
 

@@ -3,7 +3,7 @@ const { ModesDirectional } = require('./ModesDirectional');
 const {
     arrayRotate,
     AbsoluteSeatNumbers,
-} = require('../CoiffeurHelpers');
+} = require('../JassHelpers');
 
 class ModeSlalom extends ModesDirectional {
     constructor(multiplier) {

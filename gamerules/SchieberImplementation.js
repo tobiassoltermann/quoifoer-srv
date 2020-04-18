@@ -1,9 +1,8 @@
 
 const Card = require('./Card');
 const CardSet = require('./CardSet');
-const CoiffeurScores = require('./CoiffeurScores');
+const SchieberScores = require('./SchieberScores');
 const JassCardSet = require('./JassCardSet');
-const ClosedCardSet = require('./ClosedCardSet');
 const RoundManager = require('./RoundManager');
 const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
 const {
@@ -17,10 +16,10 @@ const {
 
  } = require('./JassHelpers');
 
-class CoiffeurGamerules {
+class SchieberGamerules {
     constructor(room) {
         this.modes = new SuperSachCoiffeurModeList();
-        this.scoresObject = new CoiffeurScores(this.modes);
+        this.scoresObject = new SchieberScores(this.modes);
         this.cardSet = new JassCardSet();
         this.room = room;
         
@@ -53,11 +52,11 @@ class CoiffeurGamerules {
     // Must implement!
     onPlayerJoin(player) {
         console.log("join", player.getName());
-        player.client.on('coiffeur-requestgamestate', () => {
+        player.client.on('schieber-requestgamestate', () => {
             this.sendGameStateAll();
         })
 
-        player.client.on('coiffeur-seat', (compass, response) => {
+        player.client.on('schieber-seat', (compass, response) => {
             var seatNo = AbsoluteSeatCompass().findIndex((crt) => { return compass == crt }); // XLATE: compassToSeatNo()
             if (seatNo == -1) {
                 response({
@@ -89,21 +88,21 @@ class CoiffeurGamerules {
             }
         });
 
-        player.client.on('coiffeur-unseat', (response) => {
+        player.client.on('schieber-unseat', (response) => {
             this.onPlayerLeave(player);
             
         });
 
-        player.client.on('coiffeur-selectpush', () => {
+        player.client.on('schieber-selectpush', () => {
             this.roundManager.pushSelected();
         });
 
-        player.client.on('coiffeur-selecttrick', (multiplier, subselection) => {
+        player.client.on('schieber-selecttrick', (multiplier, subselection) => {
             this.roundManager.trickSelected(multiplier, subselection);
         });
 
-        player.client.on('coiffeur-playcard', (cardName, allCardsUnlocked, response) => {
-            console.log("coiffeur-playcard", cardName, allCardsUnlocked);
+        player.client.on('schieber-playcard', (cardName, allCardsUnlocked, response) => {
+            console.log("schieber-playcard", cardName, allCardsUnlocked);
             if (allCardsUnlocked) {
                 console.debug("player", player, "has played card ", cardName, "with all cards unlocked. gameState:", this.gameState);
             }
@@ -299,7 +298,7 @@ class CoiffeurGamerules {
         this.room.getAllPlayers().forEach((player) => {
             var [localGamestate, overallUIState] = this.compilePlayerGamestate(player);
             if (player.client != null) {
-                player.client.emit("coiffeur-gamestate", localGamestate, overallUIState);
+                player.client.emit("schieber-gamestate", localGamestate, overallUIState);
                 player.client.emit('debugInfo', localGamestate, overallUIState);
             };
         })
@@ -407,4 +406,4 @@ class CoiffeurGamerules {
     }
 }
 
-module.exports = CoiffeurGamerules;
+module.exports = SchieberGamerules;

@@ -5,13 +5,13 @@ const {
     ModeDiamonds
 } = require('./gamerules/coiffeurmodes/ModesRace');
 
-const CoiffeurCardSet = require('./gamerules/CoiffeurCardSet');
+const JassCardSet = require('./gamerules/JassCardSet');
 const CardSet = require('./gamerules/CardSet');
 const Card = require('./gamerules/Card');
 
-this.cardSet = new CoiffeurCardSet();
+this.cardSet = new JassCardSet();
 
-const CoiffeurSet = new CoiffeurCardSet();
+const CoiffeurSet = new JassCardSet();
 
 function logCanPlay(card, can) {
     console.log("Can play ", card.name, ": ", can ? "yes" : "no" );

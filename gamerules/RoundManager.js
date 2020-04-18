@@ -1,7 +1,7 @@
 const {
     getNullCard,
     getTeamBySeat,
-} = require('./CoiffeurHelpers');
+} = require('./JassHelpers');
 
 const StichManager = require('./StichManager');
 
