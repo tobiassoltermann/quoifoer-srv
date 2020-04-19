@@ -4,7 +4,7 @@ const CardSet = require('./CardSet');
 const CoiffeurScores = require('./CoiffeurScores');
 const JassCardSet = require('./JassCardSet');
 const ClosedCardSet = require('./ClosedCardSet');
-const RoundManager = require('./RoundManager');
+const CoiffeurRoundManager = require('./CoiffeurRoundManager');
 const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
 const {
     getTeamBySeat,
@@ -47,7 +47,7 @@ class CoiffeurGamerules {
                 player3: this.cardSet.getSpecificCardByName("K9"),
             }
         };
-        this.roundManager = new RoundManager(this);
+        this.roundManager = new CoiffeurRoundManager(this);
     }
 
     // Must implement!

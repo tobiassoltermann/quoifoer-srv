@@ -3,8 +3,8 @@ const Card = require('./Card');
 const CardSet = require('./CardSet');
 const SchieberScores = require('./SchieberScores');
 const JassCardSet = require('./JassCardSet');
-const RoundManager = require('./RoundManager');
-const SuperSachCoiffeurModeList = require('./SuperSachCoiffeurModeList');
+const SchieberRoundManager = require('./SchieberRoundManager');
+const SuperSachSchieberModeList = require('./SuperSachSchieberModeList');
 const {
     getTeamBySeat,
     createTeamNames,
@@ -18,7 +18,7 @@ const {
 
 class SchieberGamerules {
     constructor(room) {
-        this.modes = new SuperSachCoiffeurModeList();
+        this.modes = new SuperSachSchieberModeList();
         this.scoresObject = new SchieberScores(this.modes);
         this.cardSet = new JassCardSet();
         this.room = room;
@@ -46,7 +46,7 @@ class SchieberGamerules {
                 player3: this.cardSet.getSpecificCardByName("K9"),
             }
         };
-        this.roundManager = new RoundManager(this);
+        this.roundManager = new SchieberRoundManager(this);
     }
 
     // Must implement!
@@ -170,20 +170,6 @@ class SchieberGamerules {
         };
 
         var yourTeam = getTeamBySeat(player.getSeat());
-        if (yourTeam > 0) {
-            scores.scoreLines = scores.scoreLines.map((scoreLine) => {
-                const myScoreOnLine = scoreLine["scoreTeam" + yourTeam];
-                const selectable = 
-                    (myScoreOnLine == null)
-                    && this.gameState.status == "CHOOSE_TRICK"
-                    && player.getSeat() == this.gameState.turnSeat
-
-                return Object.assign(
-                    scoreLine,
-                    { selectable: selectable }
-                )
-            })
-        }
         const playerCardDeck = this.gameState.playerCardDecks["player" + player.getSeat()];
         
         if (this.gameState.status == "CHOOSE_TRICK") {

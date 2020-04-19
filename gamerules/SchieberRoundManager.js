@@ -5,7 +5,7 @@ const {
 
 const StichManager = require('./StichManager');
 
-class RoundManager {
+class SchieberRoundManager {
 
     constructor(gameRules) {
         this.gR = gameRules;
@@ -41,7 +41,7 @@ class RoundManager {
     pushSelected() {
         console.log("RoundManager.pushSelected");
         const gameState = this.gR.gameState;
-        var nextPlayerSeat = (gameState.turnSeat + 1) % this.gR.room.maxPlayers();
+        var nextPlayerSeat = (gameState.turnSeat + 2) % this.gR.room.maxPlayers();
         
         gameState.turnSeat = nextPlayerSeat;
         if (nextPlayerSeat == this.startingSeat) {
@@ -51,16 +51,19 @@ class RoundManager {
         this.stichMgr.updatePlayedCards();
         this.gR.sendGameStateAll();
     }
-    trickSelected(multiplier, subselection) {
-        console.log("RoundManager.trickSelected", multiplier, subselection);
+    trickSelected(modeName) { //, subselection) {
+        console.log("RoundManager.trickSelected", modeName);
         const gameState = this.gR.gameState;
-        this.gR.gameModeImplementation = this.gR.modes.getModeByMultiplier(multiplier);
-        this.gR.gameModeImplementation.setSubselection(subselection);
+        
+        // TODO: Get mode by Name instead of Multiplier
+        // TODO: Make selector visible only to on-turn-player.
+        this.gR.gameModeImplementation = this.gR.modes.getModeByName(modeName);
+        //this.gR.gameModeImplementation.setSubselection(subselection);
         gameState.roundPlayerCanPush = false;
         gameState.status = "PLAY_ROUND";
 
-        gameState.trickStarter = gameState.turnSeat;
-        this.roundMultiplier = multiplier;
+        gameState.trickStarter = this.startingSeat;
+        this.roundMultiplier = this.gR.gameModeImplementation.getMultiplier();;
         this.stichMgr.beginStich();
         this.gR.sendGameStateAll();
     }
@@ -81,14 +84,12 @@ class RoundManager {
 
 
         const calculatedScores = this.stichMgr.calculateScores();
-        const startingTeam = getTeamBySeat(gameState.trickStarter);
         var scoresObject={
-            scoreTeam1: null,
-            scoreTeam2: null,
-
+            scoreTeam1: calculatedScores.team1Score,
+            scoreTeam2: calculatedScores.team2Score,
+            multiplier: this.roundMultiplier,
         };
-        scoresObject["scoreTeam" + startingTeam] = calculatedScores["team" + startingTeam + "Score"];
-        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, scoresObject);
+        this.gR.scoresObject.addScore(scoresObject);
 
         this.gR.sendGameStateAll();
         if (this.roundIndex < this.roundMax - 1) {
@@ -119,4 +120,4 @@ class RoundManager {
     }
 }
 
-module.exports = RoundManager
+module.exports = SchieberRoundManager

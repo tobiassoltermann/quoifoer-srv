@@ -23,6 +23,13 @@ class ModeList {
         return foundMode
     }
 
+    getModeByName(modeName) {
+        var foundMode = Object.values(this.modes).find( (crtMode) => {
+            return crtMode.getName() == modeName;
+        } )
+        return foundMode
+    }
+
     length() { 
         return Object.keys(this.modes).length;
     }

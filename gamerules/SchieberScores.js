@@ -2,17 +2,7 @@ class SchieberScores {
     constructor(modes) {
         this.modes = modes;
         this.scores = {
-            scoreLines: this.modes.allModes().map( (crtMode) => {
-                var crtScoreline = {
-                    icon: crtMode.getIcon(),
-                    scoreTeam1: null,
-                    scoreTeam2: null,
-                }
-                if (crtMode.hasSubselector()) {
-                    crtScoreline.subselectorName = crtMode.getSubselectorName();
-                }
-                return crtScoreline;
-            }),
+            scoreItems: [],
             totalTeam1: 0,
             totalTeam2: 0,
             team1Name: 'Team 1',
@@ -20,27 +10,19 @@ class SchieberScores {
             mode: "Schieber",
         }
     }
-
-    updateScore(index, scoreObject) {
-        this.scores.scoreLines[index] = Object.assign(
-            this.scores.scoreLines[index],
-            scoreObject
-        );
-
-        this.updateTotals();
+    addScore(scoreObject) {
+        this.scores.scoreItems.push(scoreObject);
     }
 
     updateTotals() {
         this.scores.totalTeam1 = 
-            this.scores.scoreLines.reduce( (acc, currentValue, index) => {
-                var multiplier = index + 1;
-                return acc + (currentValue.scoreTeam1 * multiplier);
+            this.scores.scoreItems.reduce( (acc, currentValue) => {
+                return acc + (currentValue.scoreTeam1 * currentValue.multiplier);
             }, 0);
         this.scores.totalTeam2 = 
-            this.scores.scoreLines.reduce( (acc, currentValue, index) => {
-                var multiplier = index + 1;
+            this.scores.scoreItems.reduce( (acc, currentValue) => {
 
-                return acc + (currentValue.scoreTeam2 * multiplier);
+                return acc + (currentValue.scoreTeam2 * currentValue.multiplier);
             }, 0);
     }
 
