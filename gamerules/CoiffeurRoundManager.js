@@ -82,13 +82,8 @@ class CoiffeurRoundManager {
 
         const calculatedScores = this.stichMgr.calculateScores();
         const startingTeam = getTeamBySeat(gameState.trickStarter);
-        var scoresObject={
-            scoreTeam1: null,
-            scoreTeam2: null,
-
-        };
-        scoresObject["scoreTeam" + startingTeam] = calculatedScores["team" + startingTeam + "Score"];
-        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, scoresObject);
+        const scoresStartingTeam = calculatedScores["team" + startingTeam + "Score"];
+        this.gR.scoresObject.updateScore(this.roundMultiplier - 1, startingTeam, scoresStartingTeam);
 
         this.gR.sendGameStateAll();
         if (this.roundIndex < this.roundMax - 1) {

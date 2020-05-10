@@ -21,11 +21,8 @@ class CoiffeurScores {
         }
     }
 
-    updateScore(index, scoreObject) {
-        this.scores.scoreLines[index] = Object.assign(
-            this.scores.scoreLines[index],
-            scoreObject
-        );
+    updateScore(index, startingTeam, scoresStartingTeam) {
+        this.scores.scoreLines[index]["scoreTeam" + startingTeam] = scoresStartingTeam;
 
         this.updateTotals();
     }

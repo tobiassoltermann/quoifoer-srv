@@ -55,6 +55,7 @@ class StichManager {
             {},
             gameState.tableCardDeck,
             {
+                winningTeam,
                 winningPlayerSeat,
                 team1Score,
                 team2Score,
@@ -116,40 +117,47 @@ class StichManager {
     }
 
     calculateScores() {
+        const gameState = this.gR.gameState;
+        const startingTeam = getTeamBySeat(gameState.trickStarter);
+        const notStartingTeam = ((startingTeam) => {
+            if (startingTeam === 1) { return 2; }
+            if (startingTeam === 2) { return 1; }
+        })(startingTeam);
+
         const lastStichValue = 5;
-        var team1Score = 0;
-        var team2Score = 0;
+        var scoreObj = {
+            team1Score: 0,
+            team2Score: 0,
+        };
 
         // Last Stich +5pts
         this.stiche.forEach( (stich) => {
-            team1Score += stich.team1Score;
-            team2Score += stich.team2Score;
+            scoreObj.team1Score += stich.team1Score;
+            scoreObj.team2Score += stich.team2Score;
         });
         switch (this.crtStich.winningPlayerSeat) {
             case 0:
             case 2:
-                team1Score += lastStichValue;
+                scoreObj.team1Score += lastStichValue;
                 break;
             case 1:
             case 3:
-                team2Score += lastStichValue;
+                scoreObj.team2Score += lastStichValue;
                 break;
             default:
                 console.warn("Should not happen. StichManager.calculateScores(), winningPlayerSeat has different value:", this.crtStich.winningPlayerSeat);
         }
 
         // Match bonus +100pts
-        if (team1Score == 157) {
-            team1Score += 100;
+        var countOwnStiche = this.stiche.filter( e => e.winningTeam === startingTeam).length;
+        if (countOwnStiche === 9) {
+            scoreObj["team" + startingTeam + "Score"] += 100;
         }
-        if (team2Score == 157) {
-            team2Score += 100;
+        if (countOwnStiche === 0) {
+            scoreObj["team" + notStartingTeam + "Score"] += 100
         }
 
-        return {
-            team1Score,
-            team2Score
-        };
+        return scoreObj;
     }
 }
 

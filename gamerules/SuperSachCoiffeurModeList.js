@@ -26,7 +26,6 @@ class SuperSachCoiffeurModelist extends ModeList {
             new ModeDown(5),
             new ModeUp(6),
             new ModeSlalom(7),
-            //new Mode("TANNENBAUM", 8, "trumpT"),
             new ModeTannenbaum(8),
             new Mode3x3(9),
             new ModeJoker(10),

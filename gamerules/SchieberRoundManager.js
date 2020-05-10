@@ -44,9 +44,7 @@ class SchieberRoundManager {
         var nextPlayerSeat = (gameState.turnSeat + 2) % this.gR.room.maxPlayers();
         this.hasPushed = true;
         gameState.turnSeat = nextPlayerSeat;
-        if (nextPlayerSeat == this.startingSeat) {
-            gameState.roundPlayerCanPush = false;
-        }
+        gameState.roundPlayerCanPush = false;
 
         this.stichMgr.updatePlayedCards();
         this.gR.sendGameStateAll();
@@ -62,6 +60,7 @@ class SchieberRoundManager {
         gameState.status = "PLAY_ROUND";
 
         gameState.trickStarter = this.startingSeat;
+        gameState.turnSeat = gameState.trickStarter;
         this.roundMultiplier = this.gR.gameModeImplementation.getMultiplier();;
         this.stichMgr.beginStich();
         this.gR.sendGameStateAll();
