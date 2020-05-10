@@ -217,7 +217,7 @@ class ModeSpades extends ModeRace {
 }
 class ModeDiamonds extends ModeRace {
     constructor(multiplier) {
-        super("DIAMOND", multiplier, 'trumpK', "K");
+        super("DIAMONDS", multiplier, 'trumpK', "K");
     }
 }
 

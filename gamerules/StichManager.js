@@ -1,6 +1,7 @@
 const {
     getCompassBySeat,
     getNullCard,
+    getTeamBySeat,
 } = require('./JassHelpers');
 
 
