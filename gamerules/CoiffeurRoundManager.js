@@ -10,7 +10,7 @@ class CoiffeurRoundManager {
     constructor(gameRules) {
         this.gR = gameRules;
         this.roundIndex = -1;
-        this.roundMax = gameRules.modes.length();
+        this.roundMax = gameRules.modes.length() * 2;
     }
     
     beginRound() {

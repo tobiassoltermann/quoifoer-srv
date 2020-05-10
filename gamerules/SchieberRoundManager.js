@@ -42,7 +42,7 @@ class SchieberRoundManager {
         console.log("RoundManager.pushSelected");
         const gameState = this.gR.gameState;
         var nextPlayerSeat = (gameState.turnSeat + 2) % this.gR.room.maxPlayers();
-        
+        this.hasPushed = true;
         gameState.turnSeat = nextPlayerSeat;
         if (nextPlayerSeat == this.startingSeat) {
             gameState.roundPlayerCanPush = false;
@@ -56,7 +56,6 @@ class SchieberRoundManager {
         const gameState = this.gR.gameState;
         
         // TODO: Get mode by Name instead of Multiplier
-        // TODO: Make selector visible only to on-turn-player.
         this.gR.gameModeImplementation = this.gR.modes.getModeByName(modeName);
         //this.gR.gameModeImplementation.setSubselection(subselection);
         gameState.roundPlayerCanPush = false;
@@ -92,6 +91,7 @@ class SchieberRoundManager {
         this.gR.scoresObject.addScore(scoresObject);
 
         this.gR.sendGameStateAll();
+        // TODO: Make score-based. roundMax not relevant
         if (this.roundIndex < this.roundMax - 1) {
             setTimeout( (() => {
                 this.beginRound();

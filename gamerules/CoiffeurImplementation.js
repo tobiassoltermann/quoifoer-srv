@@ -237,7 +237,6 @@ class CoiffeurGamerules {
                     },
                 }
             } else {
-                // TODO: Get name by player seats
                 const playersTurn = this.room.getPlayerBySeat(this.gameState.turnSeat);
                 const playersName = playersTurn.getName();
 
@@ -255,8 +254,6 @@ class CoiffeurGamerules {
         }
 
         if (this.gameState.status == "AWAIT_ENDROUND") {
-            // TODO: Get name by player seats
-
             const winningPlayername = this.room.getPlayerBySeat(this.gameState.winningPlayerSeat).getName();
 
             playerCardDeck.cards.forEach( (card, index) => {
